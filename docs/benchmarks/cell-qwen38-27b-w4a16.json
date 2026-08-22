@@ -2,14 +2,25 @@
   "tag": "qwen38-27b-w4a16",
   "serving_config": "config/serving/vllm-qwen38-27b.yaml",
   "model": "qwen38-27b-w4a16",
-  "load_seconds": 30,
+  "serving_args": {
+    "max-model-len": 16384,
+    "gpu-memory-utilization": 0.9,
+    "enable-prefix-caching": true,
+    "reasoning-parser": "qwen3",
+    "language-model-only": true,
+    "max-num-seqs": 24,
+    "max-num-batched-tokens": 2048,
+    "dtype": "auto",
+    "trust-remote-code": true
+  },
+  "load_seconds": null,
   "weights": "Model loading took 16.59 GiB",
-  "kv": "Available KV cache memory: 3.81 GiB",
+  "kv": "Available KV cache memory: 3.82 GiB",
   "kv_tokens": "GPU KV cache size: 47,938 tokens",
   "max_concurrency_at_full_context": "Maximum concurrency for 16,384 tokens per request: 2.93x",
   "vram_mib": {
-    "vllm_only": 21773,
-    "with_embedder_reranker": 23165,
+    "vllm_only": null,
+    "with_embedder_reranker": null,
     "peak_gateway_load": 24095
   },
   "placement": {
@@ -17,115 +28,113 @@
     "reranker": "gpu",
     "reranker_max_length": 512
   },
-  "oom_or_cuda_errors": 2,
+  "oom_or_cuda_errors": 0,
   "gateway_500s": 0,
-  "vllm_alive_after": false,
-  "bench_files": [
-    "bench/results/20260822T065134Z-cell-qwen38-27b-w4a16-direct.json",
-    "bench/results/20260822T065614Z-cell-qwen38-27b-w4a16-gateway.json"
-  ],
-  "vllm_version": {
-    "version": "0.27.1"
-  },
+  "vllm_alive_after": null,
   "llm_only": [
     {
       "concurrency": 1,
       "requests": 48,
       "errors": 0,
-      "wall_s": 481.09,
+      "wall_s": 480.88,
       "requests_per_s": 0.1,
       "output_tokens_per_s": 51.1,
       "ttft_ms": {
-        "p50": 40.8,
-        "p90": 47.6,
-        "p99": 49.4
+        "p50": 37.9,
+        "p90": 38.6,
+        "p99": 39.2
       },
       "total_ms": {
-        "p50": 10023.2,
-        "p90": 10029.5,
-        "p99": 10031.7
+        "p50": 10018.4,
+        "p90": 10019.1,
+        "p99": 10019.6
       },
       "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
       "error_samples": []
     },
     {
       "concurrency": 4,
       "requests": 48,
       "errors": 0,
-      "wall_s": 136.06,
+      "wall_s": 135.82,
       "requests_per_s": 0.353,
-      "output_tokens_per_s": 180.6,
+      "output_tokens_per_s": 180.9,
       "ttft_ms": {
-        "p50": 120.2,
-        "p90": 124.9,
-        "p99": 130.0
+        "p50": 110.5,
+        "p90": 111.8,
+        "p99": 114.4
       },
       "total_ms": {
-        "p50": 11337.7,
-        "p90": 11344.2,
-        "p99": 11344.4
+        "p50": 11318.1,
+        "p90": 11318.5,
+        "p99": 11322.1
       },
       "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
       "error_samples": []
     },
     {
       "concurrency": 8,
       "requests": 48,
       "errors": 0,
-      "wall_s": 69.74,
-      "requests_per_s": 0.688,
-      "output_tokens_per_s": 352.4,
+      "wall_s": 69.71,
+      "requests_per_s": 0.689,
+      "output_tokens_per_s": 352.6,
       "ttft_ms": {
-        "p50": 176.2,
-        "p90": 194.9,
-        "p99": 195.1
+        "p50": 174.4,
+        "p90": 178.0,
+        "p99": 178.1
       },
       "total_ms": {
-        "p50": 11620.9,
-        "p90": 11638.3,
-        "p99": 11638.6
+        "p50": 11617.1,
+        "p90": 11620.8,
+        "p99": 11621.6
       },
       "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
       "error_samples": []
     },
     {
       "concurrency": 16,
       "requests": 48,
       "errors": 0,
-      "wall_s": 41.44,
-      "requests_per_s": 1.158,
-      "output_tokens_per_s": 593.0,
+      "wall_s": 41.31,
+      "requests_per_s": 1.162,
+      "output_tokens_per_s": 594.9,
       "ttft_ms": {
-        "p50": 310.5,
-        "p90": 329.4,
-        "p99": 350.1
+        "p50": 301.1,
+        "p90": 305.2,
+        "p99": 305.6
       },
       "total_ms": {
-        "p50": 13811.5,
-        "p90": 13820.5,
-        "p99": 13823.8
+        "p50": 13768.8,
+        "p90": 13778.3,
+        "p99": 13779.7
       },
       "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
       "error_samples": []
     },
     {
       "concurrency": 32,
       "requests": 48,
       "errors": 0,
-      "wall_s": 48.87,
-      "requests_per_s": 0.982,
-      "output_tokens_per_s": 502.9,
+      "wall_s": 48.84,
+      "requests_per_s": 0.983,
+      "output_tokens_per_s": 503.2,
       "ttft_ms": {
-        "p50": 414.5,
-        "p90": 18540.6,
-        "p99": 18541.6
+        "p50": 422.1,
+        "p90": 18532.7,
+        "p99": 18533.1
       },
       "total_ms": {
-        "p50": 18277.8,
-        "p90": 36408.8,
-        "p99": 36410.2
+        "p50": 18279.6,
+        "p90": 36389.7,
+        "p99": 36390.8
       },
       "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
       "error_samples": []
     }
   ],
@@ -134,113 +143,120 @@
       "concurrency": 1,
       "requests": 32,
       "errors": 0,
-      "wall_s": 225.66,
+      "wall_s": 226.13,
       "requests_per_s": 0.142,
-      "output_tokens_per_s": 34.6,
+      "output_tokens_per_s": 34.9,
       "ttft_ms": {
-        "p50": 2315.8,
-        "p90": 2462.0,
-        "p99": 2764.5
+        "p50": 2229.1,
+        "p90": 2422.6,
+        "p99": 2632.9
       },
       "total_ms": {
-        "p50": 7300.1,
-        "p90": 9064.8,
-        "p99": 11568.2
+        "p50": 7144.7,
+        "p90": 9885.6,
+        "p99": 12375.7
       },
       "stage_ms_p50": {
-        "embed_ms": 94.0,
-        "retrieve_ms": 3.5,
-        "rerank_ms": 172.0,
-        "ttft_ms": 2314.9,
-        "generate_ms": 7058.2,
-        "total_ms": 7287.9
+        "embed_ms": 75.1,
+        "retrieve_ms": 3.4,
+        "rerank_ms": 177.0,
+        "ttft_ms": 2228.2,
+        "generate_ms": 6882.7,
+        "total_ms": 7132.4
       },
+      "rerank_fallbacks": 0,
       "error_samples": []
     },
     {
       "concurrency": 4,
       "requests": 32,
-      "errors": 28,
-      "wall_s": 8.67,
-      "requests_per_s": 0.462,
-      "output_tokens_per_s": 0.8,
+      "errors": 0,
+      "wall_s": 117.3,
+      "requests_per_s": 0.273,
+      "output_tokens_per_s": 67.1,
       "ttft_ms": {
-        "p50": 0,
-        "p90": 800.3,
-        "p99": 800.3
+        "p50": 2579.2,
+        "p90": 4447.4,
+        "p99": 6108.7
       },
       "total_ms": {
-        "p50": 3990.4,
-        "p90": 3990.9,
-        "p99": 3990.9
+        "p50": 14431.6,
+        "p90": 19027.4,
+        "p99": 28500.3
       },
       "stage_ms_p50": {
-        "embed_ms": 193.9,
-        "retrieve_ms": 3.7,
-        "rerank_ms": 832.5,
-        "ttft_ms": 0.0,
-        "generate_ms": 3060.6,
-        "total_ms": 3976.5
+        "embed_ms": 71.7,
+        "retrieve_ms": 3.4,
+        "rerank_ms": 363.0,
+        "ttft_ms": 2578.4,
+        "generate_ms": 13882.1,
+        "total_ms": 14419.4
       },
-      "error_samples": [
-        "RuntimeError: LLM backend 500: {\"error\":{\"message\":\"EngineCore encountered an issue. See stack trace (above) for the root cause.\",\"type\":\"InternalServerError\",\"param\":null,\"code\":500}}",
-        "ConnectError: All connection attempts failed",
-        "ConnectError: All connection attempts failed",
-        "ConnectError: All connection attempts failed",
-        "ConnectError: All connection attempts failed"
-      ]
+      "rerank_fallbacks": 0,
+      "error_samples": []
     },
     {
       "concurrency": 8,
       "requests": 32,
-      "errors": 32,
-      "wall_s": 5.29,
-      "requests_per_s": 0.0,
-      "output_tokens_per_s": 0.0,
+      "errors": 0,
+      "wall_s": 97.49,
+      "requests_per_s": 0.328,
+      "output_tokens_per_s": 80.9,
       "ttft_ms": {
-        "p50": 0.0,
-        "p90": 0.0,
-        "p99": 0.0
+        "p50": 3968.1,
+        "p90": 10637.6,
+        "p99": 14931.9
       },
       "total_ms": {
-        "p50": 0.0,
-        "p90": 0.0,
-        "p99": 0.0
+        "p50": 21044.2,
+        "p90": 37891.3,
+        "p99": 51205.2
       },
-      "stage_ms_p50": {},
-      "error_samples": [
-        "ConnectError: All connection attempts failed",
-        "ConnectError: All connection attempts failed",
-        "ConnectError: All connection attempts failed",
-        "ConnectError: All connection attempts failed",
-        "ConnectError: All connection attempts failed"
-      ]
+      "stage_ms_p50": {
+        "embed_ms": 78.6,
+        "retrieve_ms": 3.7,
+        "rerank_ms": 390.1,
+        "ttft_ms": 3967.2,
+        "generate_ms": 20771.2,
+        "total_ms": 21031.4
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
     },
     {
       "concurrency": 16,
       "requests": 32,
-      "errors": 32,
-      "wall_s": 5.32,
-      "requests_per_s": 0.0,
-      "output_tokens_per_s": 0.0,
+      "errors": 0,
+      "wall_s": 95.95,
+      "requests_per_s": 0.334,
+      "output_tokens_per_s": 77.4,
       "ttft_ms": {
-        "p50": 0.0,
-        "p90": 0.0,
-        "p99": 0.0
+        "p50": 20896.8,
+        "p90": 34154.7,
+        "p99": 39794.3
       },
       "total_ms": {
-        "p50": 0.0,
-        "p90": 0.0,
-        "p99": 0.0
+        "p50": 42620.1,
+        "p90": 61249.0,
+        "p99": 69855.4
       },
-      "stage_ms_p50": {},
-      "error_samples": [
-        "ConnectError: All connection attempts failed",
-        "ConnectError: All connection attempts failed",
-        "ConnectError: All connection attempts failed",
-        "ConnectError: All connection attempts failed",
-        "ConnectError: All connection attempts failed"
-      ]
+      "stage_ms_p50": {
+        "embed_ms": 111.1,
+        "retrieve_ms": 3.8,
+        "rerank_ms": 476.8,
+        "ttft_ms": 20895.8,
+        "generate_ms": 39194.6,
+        "total_ms": 42600.2
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
     }
-  ]
+  ],
+  "bench_files": [
+    "bench/results/20260822T203145Z-cell-qwen38-27b-w4a16-llm-only.json",
+    "bench/results/20260822T204140Z-cell-qwen38-27b-w4a16-rag-e2e.json"
+  ],
+  "vllm_version": {
+    "version": "0.27.1"
+  }
 }

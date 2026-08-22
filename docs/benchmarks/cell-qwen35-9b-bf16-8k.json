@@ -14,9 +14,9 @@
   },
   "load_seconds": 40,
   "weights": "Model loading took 16.8 GiB",
-  "kv": "Available KV cache memory: 3.88 GiB",
-  "kv_tokens": "GPU KV cache size: 89,367 tokens",
-  "max_concurrency_at_full_context": "Maximum concurrency for 8,192 tokens per request: 10.91x",
+  "kv": "Available KV cache memory: 3.86 GiB",
+  "kv_tokens": "GPU KV cache size: 88,994 tokens",
+  "max_concurrency_at_full_context": "Maximum concurrency for 8,192 tokens per request: 10.86x",
   "vram_mib": {
     "vllm_only": 21857,
     "with_embedder_reranker": 23349,
@@ -27,7 +27,7 @@
     "reranker": "gpu",
     "reranker_max_length": 1024
   },
-  "oom_or_cuda_errors": 99,
+  "oom_or_cuda_errors": 0,
   "gateway_500s": 0,
   "vllm_alive_after": true,
   "llm_only": [
@@ -35,18 +35,18 @@
       "concurrency": 1,
       "requests": 48,
       "errors": 0,
-      "wall_s": 484.11,
+      "wall_s": 484.14,
       "requests_per_s": 0.099,
       "output_tokens_per_s": 50.8,
       "ttft_ms": {
-        "p50": 29.9,
-        "p90": 30.8,
+        "p50": 30.4,
+        "p90": 30.9,
         "p99": 31.4
       },
       "total_ms": {
-        "p50": 10086.0,
-        "p90": 10087.4,
-        "p99": 10088.5
+        "p50": 10089.1,
+        "p90": 10090.5,
+        "p99": 10091.1
       },
       "stage_ms_p50": {},
       "rerank_fallbacks": 0,
@@ -56,18 +56,18 @@
       "concurrency": 4,
       "requests": 48,
       "errors": 0,
-      "wall_s": 125.62,
+      "wall_s": 125.63,
       "requests_per_s": 0.382,
       "output_tokens_per_s": 195.6,
       "ttft_ms": {
-        "p50": 65.4,
-        "p90": 66.4,
-        "p99": 69.6
+        "p50": 65.8,
+        "p90": 68.0,
+        "p99": 69.5
       },
       "total_ms": {
-        "p50": 10467.6,
-        "p90": 10468.8,
-        "p99": 10472.3
+        "p50": 10468.9,
+        "p90": 10470.6,
+        "p99": 10473.3
       },
       "stage_ms_p50": {},
       "rerank_fallbacks": 0,
@@ -77,18 +77,18 @@
       "concurrency": 8,
       "requests": 48,
       "errors": 0,
-      "wall_s": 63.45,
+      "wall_s": 63.48,
       "requests_per_s": 0.756,
-      "output_tokens_per_s": 387.3,
+      "output_tokens_per_s": 387.2,
       "ttft_ms": {
-        "p50": 78.2,
-        "p90": 80.6,
-        "p99": 81.1
+        "p50": 78.4,
+        "p90": 82.5,
+        "p99": 82.9
       },
       "total_ms": {
-        "p50": 10574.8,
-        "p90": 10577.8,
-        "p99": 10578.3
+        "p50": 10579.0,
+        "p90": 10582.8,
+        "p99": 10583.6
       },
       "stage_ms_p50": {},
       "rerank_fallbacks": 0,
@@ -98,18 +98,18 @@
       "concurrency": 16,
       "requests": 48,
       "errors": 0,
-      "wall_s": 34.32,
-      "requests_per_s": 1.399,
-      "output_tokens_per_s": 716.2,
+      "wall_s": 34.38,
+      "requests_per_s": 1.396,
+      "output_tokens_per_s": 714.7,
       "ttft_ms": {
-        "p50": 127.9,
-        "p90": 163.0,
-        "p99": 163.9
+        "p50": 153.9,
+        "p90": 188.3,
+        "p99": 188.6
       },
       "total_ms": {
-        "p50": 11428.8,
-        "p90": 11464.8,
-        "p99": 11466.4
+        "p50": 11453.1,
+        "p90": 11487.4,
+        "p99": 11487.7
       },
       "stage_ms_p50": {},
       "rerank_fallbacks": 0,
@@ -119,18 +119,18 @@
       "concurrency": 32,
       "requests": 48,
       "errors": 0,
-      "wall_s": 25.39,
-      "requests_per_s": 1.89,
-      "output_tokens_per_s": 967.9,
+      "wall_s": 25.37,
+      "requests_per_s": 1.892,
+      "output_tokens_per_s": 968.6,
       "ttft_ms": {
-        "p50": 216.6,
-        "p90": 218.2,
+        "p50": 264.3,
+        "p90": 265.7,
         "p99": 266.5
       },
       "total_ms": {
-        "p50": 13926.3,
-        "p90": 13929.4,
-        "p99": 13941.9
+        "p50": 13921.4,
+        "p90": 13924.8,
+        "p99": 13926.6
       },
       "stage_ms_p50": {},
       "rerank_fallbacks": 0,
@@ -142,26 +142,26 @@
       "concurrency": 1,
       "requests": 32,
       "errors": 0,
-      "wall_s": 165.55,
-      "requests_per_s": 0.193,
-      "output_tokens_per_s": 43.4,
+      "wall_s": 165.1,
+      "requests_per_s": 0.194,
+      "output_tokens_per_s": 43.6,
       "ttft_ms": {
-        "p50": 487.2,
-        "p90": 1060.4,
-        "p99": 1085.7
+        "p50": 493.4,
+        "p90": 1045.0,
+        "p99": 1081.3
       },
       "total_ms": {
-        "p50": 5003.0,
-        "p90": 7534.1,
-        "p99": 8412.9
+        "p50": 4976.2,
+        "p90": 7527.7,
+        "p99": 8397.7
       },
       "stage_ms_p50": {
-        "embed_ms": 73.2,
+        "embed_ms": 68.7,
         "retrieve_ms": 3.5,
-        "rerank_ms": 271.3,
-        "ttft_ms": 486.2,
-        "generate_ms": 4607.7,
-        "total_ms": 4990.8
+        "rerank_ms": 271.5,
+        "ttft_ms": 492.3,
+        "generate_ms": 4598.1,
+        "total_ms": 4964.1
       },
       "rerank_fallbacks": 0,
       "error_samples": []
@@ -170,26 +170,26 @@
       "concurrency": 4,
       "requests": 32,
       "errors": 0,
-      "wall_s": 53.64,
-      "requests_per_s": 0.597,
-      "output_tokens_per_s": 123.1,
+      "wall_s": 54.45,
+      "requests_per_s": 0.588,
+      "output_tokens_per_s": 134.2,
       "ttft_ms": {
-        "p50": 796.9,
-        "p90": 2007.7,
-        "p99": 2637.8
+        "p50": 782.4,
+        "p90": 1239.1,
+        "p99": 1998.0
       },
       "total_ms": {
-        "p50": 6160.5,
-        "p90": 8935.6,
-        "p99": 11638.9
+        "p50": 5935.9,
+        "p90": 9196.9,
+        "p99": 13901.5
       },
       "stage_ms_p50": {
-        "embed_ms": 74.4,
-        "retrieve_ms": 3.5,
-        "rerank_ms": 14.9,
-        "ttft_ms": 795.9,
-        "generate_ms": 6062.7,
-        "total_ms": 6148.5
+        "embed_ms": 80.6,
+        "retrieve_ms": 3.4,
+        "rerank_ms": 537.7,
+        "ttft_ms": 781.5,
+        "generate_ms": 5281.2,
+        "total_ms": 5933.6
       },
       "rerank_fallbacks": 0,
       "error_samples": []
@@ -198,26 +198,26 @@
       "concurrency": 8,
       "requests": 32,
       "errors": 0,
-      "wall_s": 34.97,
-      "requests_per_s": 0.915,
-      "output_tokens_per_s": 207.8,
+      "wall_s": 35.97,
+      "requests_per_s": 0.89,
+      "output_tokens_per_s": 202.1,
       "ttft_ms": {
-        "p50": 810.5,
-        "p90": 1597.1,
-        "p99": 2255.8
+        "p50": 859.9,
+        "p90": 2780.9,
+        "p99": 4249.6
       },
       "total_ms": {
-        "p50": 7925.1,
-        "p90": 11290.4,
-        "p99": 12687.9
+        "p50": 8019.3,
+        "p90": 12026.3,
+        "p99": 14498.1
       },
       "stage_ms_p50": {
-        "embed_ms": 85.4,
-        "retrieve_ms": 3.8,
-        "rerank_ms": 16.5,
-        "ttft_ms": 809.7,
-        "generate_ms": 7699.9,
-        "total_ms": 7913.0
+        "embed_ms": 75.4,
+        "retrieve_ms": 3.5,
+        "rerank_ms": 548.7,
+        "ttft_ms": 858.7,
+        "generate_ms": 6740.3,
+        "total_ms": 8016.8
       },
       "rerank_fallbacks": 0,
       "error_samples": []
@@ -226,34 +226,34 @@
       "concurrency": 16,
       "requests": 32,
       "errors": 0,
-      "wall_s": 26.53,
-      "requests_per_s": 1.206,
-      "output_tokens_per_s": 269.7,
+      "wall_s": 30.34,
+      "requests_per_s": 1.055,
+      "output_tokens_per_s": 246.8,
       "ttft_ms": {
-        "p50": 1170.8,
-        "p90": 4657.9,
-        "p99": 6038.1
+        "p50": 2111.2,
+        "p90": 7076.4,
+        "p99": 8475.3
       },
       "total_ms": {
-        "p50": 11727.6,
-        "p90": 16923.2,
-        "p99": 22021.4
+        "p50": 12354.6,
+        "p90": 20734.2,
+        "p99": 24187.9
       },
       "stage_ms_p50": {
-        "embed_ms": 96.5,
-        "retrieve_ms": 4.5,
-        "rerank_ms": 21.4,
-        "ttft_ms": 1169.3,
-        "generate_ms": 11378.9,
-        "total_ms": 11710.3
+        "embed_ms": 126.2,
+        "retrieve_ms": 4.0,
+        "rerank_ms": 1045.6,
+        "ttft_ms": 2102.8,
+        "generate_ms": 10241.3,
+        "total_ms": 12337.5
       },
       "rerank_fallbacks": 0,
       "error_samples": []
     }
   ],
   "bench_files": [
-    "bench/results/20260822T195854Z-cell-qwen35-9b-bf16-8k-llm-only.json",
-    "bench/results/20260822T200418Z-cell-qwen35-9b-bf16-8k-rag-e2e.json"
+    "bench/results/20260822T211121Z-cell-qwen35-9b-bf16-8k-llm-only.json",
+    "bench/results/20260822T211646Z-cell-qwen35-9b-bf16-8k-rag-e2e.json"
   ],
   "vllm_version": {
     "version": "0.27.1"
