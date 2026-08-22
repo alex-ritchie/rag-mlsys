@@ -51,11 +51,11 @@ services:
     ports: ["8000:8000"]
 
   vllm:
-    image: vllm/vllm-openai:${VLLM_TAG:-latest}     # pin the exact tag the moment M3 passes (spec §5.4)
+    image: vllm/vllm-openai:${VLLM_TAG:-v0.27.1}    # pinned at M3 (CUDA 12.x build required for driver 575; see DEVIATIONS #1)
     profiles: [llm]
     command: >
       --model ${VLLM_MODEL:-dbirks/Qwen3.8-27B-W4A16-AutoRound} --served-model-name qwen38-27b-w4a16
-      --port 8003 --max-model-len 32768 --gpu-memory-utilization 0.90 --enable-prefix-caching
+      --port 8003 --max-model-len 32768 --gpu-memory-utilization 0.95 --enable-prefix-caching
       --reasoning-parser qwen3 --language-model-only --max-num-seqs 32 ${VLLM_EXTRA_ARGS:-}
     environment: {HF_HOME: /data/hf-cache, VLLM_USE_V1: "1"}
     volumes: [../data/hf-cache:/data/hf-cache]

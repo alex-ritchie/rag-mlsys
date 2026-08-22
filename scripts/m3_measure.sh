@@ -29,7 +29,7 @@ LOAD_S=$(( $(date +%s) - T0 ))
 VRAM_LOADED=$(vram)
 echo "   up in ${LOAD_S}s, VRAM after load: ${VRAM_LOADED} MiB"
 VERSION=$(curl -s localhost:8003/version)
-MODE=$(grep -qE -- "--enforce-eager" <<<"$*" && echo eager || (grep -q "enforce-eager: true" "$CFG" && echo eager || echo cuda-graphs))
+MODE=$(grep -qE -- "enforce-eager(=true)?( |$)" <<<"$*" && echo eager || (grep -qE "^\s*enforce-eager: true" "$CFG" && echo eager || echo cuda-graphs))
 KV=$(grep -oE "GPU KV cache size: [0-9,]+ tokens|# GPU blocks: [0-9]+|Maximum concurrency for [0-9,]+ tokens per request: [0-9.]+x" "$LOGS/vllm-m3.log" | tr '\n' ';' || true)
 
 echo "== smoke (single request, thinking off)"

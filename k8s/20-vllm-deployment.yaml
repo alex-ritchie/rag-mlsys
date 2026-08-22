@@ -18,13 +18,13 @@ spec:
       runtimeClassName: nvidia
       containers:
         - name: vllm
-          image: vllm/vllm-openai:latest   # pin the exact tag once M3 passes (spec §5.4)
+          image: vllm/vllm-openai:v0.27.1   # pinned at M3 (spec §5.4)
           args:
             - --model=dbirks/Qwen3.8-27B-W4A16-AutoRound
             - --served-model-name=qwen38-27b-w4a16
             - --port=8003
             - --max-model-len=32768
-            - --gpu-memory-utilization=0.90
+            - --gpu-memory-utilization=0.95
             - --enable-prefix-caching
             - --reasoning-parser=qwen3
             - --language-model-only

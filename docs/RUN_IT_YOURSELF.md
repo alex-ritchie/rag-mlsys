@@ -4,9 +4,9 @@ Two paths: the **developer path** (no Docker needed, used for all the tests in t
 **compose path** (the full stack as containers). Both start from a clean clone and end with a cited,
 streaming answer. GPU steps assume an NVIDIA card with ≥ 24 GB and a 12.x-capable driver.
 
-> Status on the author's workstation (2026-08-21): developer path verified end to end through
-> ingestion, indexing, retrieval and the gateway with fake/real services; compose path written but not
-> yet executed on this host (see `docs/DEVIATIONS.md` #4). This table is updated as each step is re-run.
+> Status on the author's workstation (2026-08-21): developer path verified end to end — ingestion, indexing,
+> retrieval, vLLM serving of Qwen3.8-27B (M3 passed), gateway and frontend via `make up`; compose path written but
+> not yet executed on this host (see `docs/DEVIATIONS.md` #4).
 
 ## 0. Prerequisites
 
@@ -60,7 +60,7 @@ make index                     # EMBEDDER_MODE=cpu make index  for the CPU fallb
 ## 4. Retrieval services + smoke test
 
 ```bash
-EMBEDDER_MODE=cpu make embedder &      # :8001  (gpu if VRAM allows — see the M3 decision)
+EMBEDDER_MODE=cpu make embedder &      # :8001  (CPU: vLLM takes 22.9 of 24 GB — the M3 placement decision)
 RERANKER_MODE=cpu make reranker &      # :8002
 make retrieval-smoke                   # 10 spot-check queries with scores per stage
 ```

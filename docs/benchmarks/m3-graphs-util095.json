@@ -1,0 +1,33 @@
+{
+  "tag": "graphs-util095",
+  "config": "config/serving/vllm-qwen38-27b.yaml",
+  "overrides": "--set gpu-memory-utilization=0.95",
+  "mode": "cuda-graphs",
+  "vllm_version": {
+    "version": "0.27.1"
+  },
+  "load_seconds": 40,
+  "vram_after_load_mib": 22931,
+  "vram_peak_soak_mib": 22931,
+  "kv_cache_log": "GPU KV cache size: 67,584 tokens;Maximum concurrency for 32,768 tokens per request: 2.06x;",
+  "soak": {
+    "concurrency": 8,
+    "requests": 417,
+    "errors": 0,
+    "wall_s": 606.55,
+    "requests_per_s": 0.687,
+    "output_tokens_per_s": 351.3,
+    "ttft_ms": {
+      "p50": 171.8,
+      "p90": 174.7,
+      "p99": 176.7
+    },
+    "total_ms": {
+      "p50": 11625.6,
+      "p90": 11640.6,
+      "p99": 11653.1
+    }
+  },
+  "oom_or_cuda_errors_in_log": 0,
+  "bench_result": "bench/results/20260822T032900Z-m3-soak-c8-10min-m3-graphs-util095.json"
+}

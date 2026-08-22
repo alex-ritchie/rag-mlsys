@@ -5,7 +5,7 @@ served_model_name: qwen38-27b-w4a16
 port: 8003
 args:
   max-model-len: 32768
-  gpu-memory-utilization: 0.90
+  gpu-memory-utilization: 0.95        # 0.90 leaves only 1.52 GiB KV on 24 GB (engine refuses 32K); 0.95 -> 4.78 GiB (M3 measured)
   enable-prefix-caching: true
   reasoning-parser: qwen3
   language-model-only: true          # skip the vision tower (flag name per Qwen3.6 recipes; verify at M3)
@@ -19,5 +19,6 @@ env:
   VLLM_USE_V1: "1"
 notes: |
   Ampere (sm_86): no FP8/NVFP4 kernels. W4A16 compressed-tensors runs through Marlin.
-  Contingency ladder if VRAM is over budget: reranker->CPU, embedder->CPU,
-  gpu-memory-utilization 0.85, max-model-len 16384 (spec §5.4).
+  M3 (2026-08-21, vLLM 0.27.1+cu129, torch 2.13.0+cu129, transformers 5.15.1): weights 16.84 GiB,
+  KV 4.78 GiB (67,584 tokens) at util 0.95, VRAM 22.9 GB steady under the c8 soak, CUDA graphs on.
+  Consequence: embedder and reranker run on CPU (nothing else fits) — docs/benchmarks/m3-baseline.md.

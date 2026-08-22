@@ -20,11 +20,13 @@ export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 [[ -d "$HF_HOME/hub/models--BAAI--bge-m3" && -d "$HF_HOME/hub/models--BAAI--bge-reranker-v2-m3" ]] && export HF_HUB_OFFLINE="${HF_HUB_OFFLINE:-1}"
 
 # ---- defaults ---------------------------------------------------------------
-if nvidia-smi >/dev/null 2>&1; then GPU_DEFAULT=gpu; else GPU_DEFAULT=cpu; fi
-export EMBEDDER_MODE="${EMBEDDER_MODE:-$GPU_DEFAULT}"
-export RERANKER_MODE="${RERANKER_MODE:-$GPU_DEFAULT}"
 export PROFILE="${PROFILE:-local}"
 export LLM_MODEL="${LLM_MODEL:-qwen38-27b-w4a16}"
+# Placement (M3 decision, docs/benchmarks/m3-baseline.md): when vLLM serves on this GPU it takes 22.9 of 24 GB,
+# so the embedder and reranker run on CPU. They only use the GPU when no local LLM is running (fake/demo).
+if nvidia-smi >/dev/null 2>&1 && { [[ "$LLM_MODEL" == "fake" ]] || [[ "$PROFILE" == "demo" ]]; }; then GPU_DEFAULT=gpu; else GPU_DEFAULT=cpu; fi
+export EMBEDDER_MODE="${EMBEDDER_MODE:-$GPU_DEFAULT}"
+export RERANKER_MODE="${RERANKER_MODE:-$GPU_DEFAULT}"
 export LLM_BASE_URL="${LLM_BASE_URL:-http://localhost:8003/v1}"
 VLLM_CONFIG="${VLLM_CONFIG:-config/serving/vllm-qwen38-27b.yaml}"
 export EMBEDDER_URL="${EMBEDDER_URL:-http://localhost:8001}"

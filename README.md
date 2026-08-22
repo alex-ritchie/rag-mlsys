@@ -123,6 +123,7 @@ generation) is an accessibility layer so you can try the retrieval and citation 
 - Chunking: 2,815 chunks, p50 680 tokens in the bge-m3 tokenizer; re-ingest is a content-hash no-op.
 - Retrieval: embed 9 ms (GPU) / 71 ms p50 (CPU), hybrid SQL 3–14 ms, rerank 260 ms (GPU, 30 docs).
 - Gateway: p50 overhead ≈ 5 ms excluding model + service time; the `openai` client works unmodified against the shim.
+- Serving (M3): Qwen3.8-27B W4A16 on the 3090 Ti — weights 16.84 GiB, KV 4.78 GiB at util 0.95, 351 tok/s aggregate at concurrency 8 with TTFT p50 172 ms, zero errors over 10 minutes; embedder/reranker moved to CPU because 22.9 of 24 GB is spoken for.
 - Frontend: Lighthouse performance 100, 61 KB gzipped.
 - Everything else — TTFT/tok-per-second vs concurrency, the ablation matrix, lever sweeps, HPA 1→4→1, dashboards —
   lands in `docs/benchmarks/` as the GPU milestones run. Placeholders are labelled *pending*; no number is typed by hand.
