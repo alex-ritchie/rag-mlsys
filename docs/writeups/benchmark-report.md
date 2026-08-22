@@ -40,7 +40,7 @@ verified golden set. "Own best" means each model runs at the configuration its V
 | Qwen3.5-9B W8A8 / vLLM, 32K, util 0.85 | quantization (int8 W+A vs 4-bit W) | 11.9 GiB | 5.9 GiB (174.3K) | emb GPU, rerank GPU@1024 | 71 / 533 / 1,296 @c32 | 0.36 s / 0.45 s† (pre-guard) | _pending_ |
 | **Qwen3.5-9B W8A8 / vLLM, 8K, util 0.80** | same, own-best | 11.9 GiB | 6.4 GiB (147.8K) | emb GPU, rerank GPU@1024 | 71 / 535 / 1,296 @c32 | **0.38 s / 0.81 s; 0 errors, 0 fallbacks** | _pending_ |
 | **Qwen3.6-35B-A3B int4 (Intel AutoRound) / vLLM, 8K, util 0.90** | dense → MoE (256 experts, 8 active) | 18.9 GiB | 0.6 GiB (17.0K) | emb CPU, rerank GPU@512 | **159 / 670 / 674 @c8 (KV-bound)** | 0.62 s / 5.6 s (re-measure pending) | _pending_ |
-| Qwen3.8-27B UD-Q4_K_M / llama.cpp (+MTP) | engine | | | | _pending_ (single-stream focus) | | |
+| **Qwen3.8-27B UD-Q4_K_M / llama.cpp, MTP draft 3, `--parallel 1`, 32K ctx** | engine | 16.5 GB GGUF (18.4 GB resident) | llama.cpp slot KV (1 slot × 32K) | emb CPU, rerank GPU@512 | **69 / — / 69 (single slot; c>1 queues)** | 2.8 s / 38 s (queue); 0 errors | _pending_ |
 
 ### What the serving numbers already say
 
@@ -87,6 +87,14 @@ verified golden set. "Own best" means each model runs at the configuration its V
    The MoE's per-stream advantage is real; its throughput advantage does not survive a 24 GB card because the
    experts' weights, not the active compute, set the KV budget. (Earlier: the AWQ build left attention in F16 and
    did not fit at all — see the MoE bring-up table in m3-baseline.md.)
+
+8. **Engine: llama.cpp + MTP vs vLLM, same model, same quant class.** Single-stream decode **69 tok/s with
+   MTP draft depth 3 vs 51 tok/s on vLLM** (1.35×): the model's trained-in draft head proposes ~3 tokens per step
+   and 56–73 % of them are accepted (mean accepted run ≈ 2.9), so each bandwidth-bound weight pass yields more than
+   one token. TTFT is worse (302 ms vs 38 ms at c1; 2.8 s vs 2.2 s rag-e2e) because llama.cpp's prefill of a
+   ~3K-token RAG prompt is slower than vLLM's. With `--parallel 1` there is no batching at all — throughput is flat
+   at ~68 tok/s from c1 to c32 while latency grows linearly with the queue — which is why this cell is the
+   *single-stream* reference: the draft-depth and KV-dtype sweeps below measure where MTP stops paying.
 
 5. **Reliability under co-residency is a first-class result.** Every GPU OOM in these runs was the reranker's, and
    every one was recovered by the halve-and-retry path; the one failure that took vLLM down happened when vLLM itself
