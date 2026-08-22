@@ -1,12 +1,20 @@
+# Architecture-ablation cell (spec §5.3): Qwen3.6-35B-A3B, MoE (256 experts, 8 active, ~3B active params), AWQ int4.
+# 25 GB on disk; on-GPU weights ~19-20 GiB with the vision tower skipped -> the tightest fit in the matrix, so it
+# starts from the 27B's co-residency lessons (8K context, bounded prefill, reranker@512 on the GPU, embedder on CPU).
 engine: vllm
-model: ""                            # fill at M8 with a community W4A16/AWQ build with 3090 precedent
-served_model_name: qwen36-35b-a3b-w4a16
+model: cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit
+served_model_name: qwen36-35b-a3b-awq
 port: 8003
 args:
-  max-model-len: 32768
+  max-model-len: 8192
   gpu-memory-utilization: 0.90
   enable-prefix-caching: true
   reasoning-parser: qwen3
   language-model-only: true
-  max-num-seqs: 32
-  quantization: compressed-tensors
+  max-num-seqs: 24
+  max-num-batched-tokens: 2048
+  dtype: auto
+  trust-remote-code: true
+  # quantization auto-detected from config.json (awq) -> vLLM moe_wna16 / awq_marlin kernels on sm_86
+env:
+  VLLM_USE_V1: "1"

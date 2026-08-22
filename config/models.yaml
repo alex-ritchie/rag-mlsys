@@ -42,10 +42,13 @@ llm:
     serving_config: config/serving/vllm-qwen35-9b-w8a8.yaml
     varies: "int8 weights+activations vs W4A16"
   arch_ablation:
-    name: qwen36-35b-a3b-w4a16
-    display: "Qwen3.6-35B-A3B W4A16 (vLLM)"
+    name: qwen36-35b-a3b-awq
+    display: "Qwen3.6-35B-A3B AWQ int4 (vLLM)"
     engine: vllm
-    repo_candidates: []
+    repo_candidates:
+      - cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit        # newest AWQ build (2026-07), chosen 2026-08-22
+      - QuantTrio/Qwen3.6-35B-A3B-AWQ            # fallback (2026-04)
+      - Intel/Qwen3.6-35B-A3B-int4-mixed-AutoRound  # smallest on disk (21.5 GB), mixed precision
     serving_config: config/serving/vllm-qwen36-35b-a3b.yaml
     varies: "dense vs MoE, same family"
   engine_ablation:
