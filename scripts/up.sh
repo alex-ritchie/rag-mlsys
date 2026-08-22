@@ -15,6 +15,8 @@ ROOT=$PWD
 LOGS=$ROOT/data/logs; mkdir -p "$LOGS"
 export PATH="$HOME/.local/opt/node/bin:$PATH"
 export HF_HOME="${HF_HOME:-$ROOT/data/hf-cache}"
+# models are cached after the first run; skip the hub round-trip (which can stall on a slow connection)
+[[ -d "$HF_HOME/hub/models--BAAI--bge-m3" && -d "$HF_HOME/hub/models--BAAI--bge-reranker-v2-m3" ]] && export HF_HUB_OFFLINE="${HF_HUB_OFFLINE:-1}"
 
 # ---- defaults ---------------------------------------------------------------
 if nvidia-smi >/dev/null 2>&1; then GPU_DEFAULT=gpu; else GPU_DEFAULT=cpu; fi
@@ -58,22 +60,30 @@ fi
 echo "   $N_CHUNKS chunks, $N_EMB embedded"
 
 # ---- services ---------------------------------------------------------------
+for port in 8000 8001 8002 5173; do
+  if ss -ltn 2>/dev/null | grep -qE ":$port "; then
+    echo "!! port $port is already in use:"; ss -ltnp 2>/dev/null | grep -E ":$port " | grep -oP 'users:\(\(.*' | cut -c1-100
+    echo "   stop it (e.g. kill the pid above) or a previous 'make up' is still running"; exit 1
+  fi
+done
 PIDS=()
+T_START=$(date +%s)
 start() { # name port cmd...
   local name=$1 port=$2; shift 2
   echo "== $name (:$port, log: data/logs/$name.log)"
   "$@" >"$LOGS/$name.log" 2>&1 &
   PIDS+=($!)
 }
-wait_for() { # name url timeout_s
-  local name=$1 url=$2 t=${3:-120}
-  for ((i = 0; i < t; i++)); do
+wait_for() { # name url pid timeout_s
+  local name=$1 url=$2 pid=$3 t=${4:-120}
+  for ((i = 0; i < t * 2; i++)); do
     curl -sf "$url" >/dev/null 2>&1 && return 0
-    sleep 1
-    if ! kill -0 "${PIDS[-1]}" 2>/dev/null; then echo "!! $name exited — see data/logs/$name.log"; tail -20 "$LOGS/$name.log"; return 1; fi
+    sleep 0.5
+    if ! kill -0 "$pid" 2>/dev/null; then echo "!! $name exited — see data/logs/$name.log"; tail -20 "$LOGS/$name.log"; return 1; fi
   done
   echo "!! $name did not become healthy in ${t}s — see data/logs/$name.log"; return 1
 }
+since() { echo "$(( $(date +%s) - T_START ))s"; }
 cleanup() {
   echo; echo "== stopping"
   for p in "${PIDS[@]}"; do kill "$p" 2>/dev/null || true; done
@@ -82,15 +92,16 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-start embedder 8001 uv run uvicorn mlsys_embedder.app:app --port 8001
-wait_for embedder http://localhost:8001/health 300
-start reranker 8002 uv run uvicorn mlsys_reranker.app:app --port 8002
-wait_for reranker http://localhost:8002/health 300
+# embedder + reranker load in parallel (~5 s each on this box once cached; first run downloads ~2 GB each)
+start embedder 8001 uv run uvicorn mlsys_embedder.app:app --port 8001; EMB_PID=${PIDS[-1]}
+start reranker 8002 uv run uvicorn mlsys_reranker.app:app --port 8002; RR_PID=${PIDS[-1]}
+wait_for embedder http://localhost:8001/health "$EMB_PID" 300; echo "   embedder ready at $(since)"
+wait_for reranker http://localhost:8002/health "$RR_PID" 300;  echo "   reranker ready at $(since)"
 start gateway 8000 uv run uvicorn mlsys_gateway.app:app --port 8000
-wait_for gateway http://localhost:8000/api/health 60
+wait_for gateway http://localhost:8000/api/health "${PIDS[-1]}" 60; echo "   gateway ready at $(since)"
 ( cd frontend && [[ -d node_modules ]] || pnpm install --silent )
 start frontend 5173 bash -c 'cd frontend && exec pnpm dev --port 5173 --strictPort'
-wait_for frontend http://localhost:5173/ 60
+wait_for frontend http://localhost:5173/ "${PIDS[-1]}" 60; echo "   frontend ready at $(since)"
 
 echo
 echo "== ready"
