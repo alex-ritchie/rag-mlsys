@@ -122,8 +122,8 @@ judge-validate: ## Judge vs. 30 hand labels -> agreement + kappa
 bench: ## Latency/throughput benchmark against the gateway (BENCH_CONFIG=bench/configs/gateway-baseline.yaml)
 	$(PY) python -m mlsys_bench.run $(or $(BENCH_CONFIG),bench/configs/gateway-baseline.yaml)
 
-bench-sweeps: ## Run every sweep config in bench/configs/sweeps/
-	for f in bench/configs/sweeps/*.yaml; do $(PY) python -m mlsys_bench.run $$f || exit 1; done
+bench-sweeps: ## Run every lever sweep (restarts the engine per row): ./scripts/sweep.sh all|vllm|llamacpp
+	./scripts/sweep.sh $(or $(SWEEP),all)
 
 bench-report: ## Render bench/results/* into docs/benchmarks/*.md tables
 	$(PY) python -m mlsys_bench.report
