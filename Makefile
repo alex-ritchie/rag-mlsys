@@ -53,8 +53,8 @@ db-migrate: ## Apply schema (idempotent)
 fetch: ## Shallow-fetch the book at the pinned commit into data/book (licensing check recorded in LICENSING.md)
 	$(PY) python -m mlsys_ingest.cli fetch
 
-ingest: db-migrate ## Fetch + parse + chunk + load chunks into Postgres (idempotent on the pinned SHA)
-	$(PY) python -m mlsys_ingest.cli run
+ingest: db-migrate ## Fetch + parse + chunk + load chunks into Postgres (idempotent on the pinned SHA; INGEST_CONFIG=config/sweeps/... for chunk-size sweeps)
+	$(PY) python -m mlsys_ingest.cli run $(if $(INGEST_CONFIG),--config $(INGEST_CONFIG),)
 
 ingest-dry: ## Parse + chunk without a database; prints chunk statistics
 	$(PY) python -m mlsys_ingest.cli dry-run

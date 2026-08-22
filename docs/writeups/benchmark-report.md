@@ -41,6 +41,8 @@ Each pairwise comparison varies exactly one factor:
 | reasoning on | `…/vllm-reasoning-on.yaml` | _pending_ | Thinking dominates TTFT; measured, not assumed. |
 | llama.cpp MTP draft depth {0,2,3,4} | `…/llamacpp-mtp-n*.yaml` | _pending_ | Where does MTP stop paying? |
 | llama.cpp KV f16 vs q4_0 | `…/llamacpp-kv-q4_0.yaml` | _pending_ | Memory vs. acceptance rate. |
+| **chunk size 400 / 600 / 800** (`config/sweeps/ingest-chunk-*.yaml`) | re-ingest + re-index + `make eval-retrieval` | _pending_ | Retrieval-side counterpart to the KV budget: smaller chunks cut rerank cost and prompt size (~linear in tokens) at some risk to multi-paragraph answers. Scored on recall@k/MRR and faithfulness. |
+| **small-to-big** (rerank on small chunks, prompt with the enclosing section) | needs a `parent_text` lookup at prompt-assembly time — not yet implemented | _pending_ | Keeps context for the LLM while making the cross-encoder's input ~3× smaller. |
 | reranker: max_length 1024 → 512, top-30 → top-20, cross-request batching | (gateway target) | measured ceiling: ~3.9 req/s, rerank p50 1.9 s @ c8 with a zero-cost LLM ([m2-retrieval.md](../benchmarks/m2-retrieval.md)) | The cross-encoder is the first non-GPU-tier bottleneck; fix before scaling the gateway. |
 
 ## 4. Framing questions (answered with numbers once M8 lands)

@@ -1,0 +1,43 @@
+# M8 retrieval-side sweep: chunk size 600 (min 300). Re-ingest + re-index + `make eval`:
+#   make ingest INGEST_CONFIG=config/sweeps/ingest-chunk-600.yaml && make index --rebuild-index && make eval-retrieval
+source:
+  repo: https://github.com/harvard-edge/cs249r_book.git
+  commit_sha: 2bd97c509923dc8d7cb0b3e2f489a7282fee5fbd
+  checkout_dir: data/book
+  license: CC-BY-NC-SA-4.0
+volumes:
+- number: 1
+  title: Introduction to Machine Learning Systems
+  quarto_config: book/quarto/config/_quarto-html-vol1.yml
+  quarto_root: book/quarto
+- number: 2
+  title: Machine Learning Systems at Scale
+  quarto_config: book/quarto/config/_quarto-html-vol2.yml
+  quarto_root: book/quarto
+selection:
+  skip_path_substrings:
+  - /frontmatter/
+  - /parts/
+  - backmatter/references
+  - index.qmd
+  - socratiq
+  appendix_base: 100
+  glossary_base: 200
+chunking:
+  tokenizer: BAAI/bge-m3
+  min_tokens: 300
+  max_tokens: 600
+  drop_code_langs:
+  - python
+  - r
+  - tikz
+  - =html
+  - =latex
+  drop_div_classes:
+  - quiz-end
+  - callout-learning-objectives
+  - callout-research-questions
+  - callout-notebook
+  - callout-quiz
+  drop_div_attrs:
+  - when-format="pdf"
