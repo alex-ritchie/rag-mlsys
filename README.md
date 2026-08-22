@@ -75,20 +75,25 @@ This tool is designed to **run locally** on consumer-grade hardware (e.g., my RT
 every stage hands its result back to the gateway, which is the only thing that ever talks to the model:
 
 ```
- browser                 gateway                  embedder      postgres      reranker        vLLM
-   │  POST /api/ask         │                        │              │             │             │
-   │ ───────────────────▶   │  1. embed question     │              │             │             │
-   │                        │ ─────────────────────▶ │              │             │             │
-   │                        │ ◀──── 1024-d vector ── │              │             │             │
-   │                        │  2. hybrid search (dense HNSW + full-text, RRF) ─▶   │             │
-   │                        │ ◀──────────── fused top-30 chunks ─── │             │             │
-   │                        │  3. rerank (question, chunk) pairs ─────────────▶   │             │
-   │                        │ ◀──────────────────── top-5 with scores ─────────── │             │
-   │ ◀── citations event ── │  (sent now: the sources are known before any text exists)        │
-   │                        │  4. build prompt = system rules + 5 numbered context blocks + question
-   │                        │ ───────────────────────────────────────────────────────────────▶ │
-   │ ◀── token, token … ─── │ ◀───────────────────────── streamed tokens ────────────────────── │
-   │ ◀── done event ─────── │  5. log query row; report per-stage timings + token usage        │
+ browser                 gateway                embedder        postgres        reranker          vLLM
+    │───── POST /api/ask ──▶│                       │               │               │               │
+    │                       │ 1. embed the question │               │               │               │
+    │                       │───── question text ──▶│               │               │               │
+    │                       │◀──── 1024-d vector ───│               │               │               │
+    │                       │ 2. hybrid search: dense HNSW + full-text, fused with RRF              │
+    │                       │──────────── vector + query ──────────▶│               │               │
+    │                       │◀───────── fused top-30 chunks ────────│               │               │
+    │                       │ 3. rerank (question, chunk) pairs     │               │               │
+    │                       │─────────────────────── 30 pairs ─────────────────────▶│               │
+    │                       │◀────────────────── top-5 with scores ─────────────────│               │
+    │◀─── citations event ──│                       │               │               │               │
+    │ (the sources are sent before any answer text exists)          │               │               │
+    │                       │ 4. build prompt = system rules + 5 numbered context blocks + question │
+    │                       │──────────────────────────────── prompt ──────────────────────────────▶│
+    │                       │◀─────────────────────────── streamed tokens ──────────────────────────│
+    │◀─── token, token, … ──│                       │               │               │               │
+    │                       │ 5. log the query row; report per-stage timings + token usage          │
+    │◀───── done event ─────│                       │               │               │               │
 ```
 
 - **Numbered context blocks** — the five reranked chunks are pasted into the prompt as `[1] (Vol 1 > Ch 13: Model
