@@ -5,7 +5,7 @@ served_model_name: qwen35-9b-bf16
 port: 8003
 args:
   max-model-len: 8192               # RAG prompts are 3-4.5K tokens; frees vLLM reserve for the co-resident services
-  gpu-memory-utilization: 0.80        # leave ~4.5 GB for GPU embedder + reranker(1024) activations
+  gpu-memory-utilization: 0.90        # 16.8 GiB weights: 0.80 leaves no KV at all ("No available memory for the cache blocks")
   enable-prefix-caching: true
   reasoning-parser: qwen3
   language-model-only: true
