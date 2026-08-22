@@ -66,7 +66,7 @@ call-site replacement in that commit silently failed to match. Consequences for 
 calls still ran in parallel on the GPU; every "OOM recovered in-service" note was in fact a reranker **500** that the
 gateway caught by falling back to the fused order (the bench could not yet count those, so `fallbacks 0` next to a
 rerank stage of ~15–20 ms means "most requests were not reranked"). LLM-only rows are unaffected. The rag-e2e phases
-of the affected cells are being re-run with the guard actually in place (`9216c4a`); rows are replaced as they land.
+of the affected cells were re-run with the guard in place (`9216c4a`, 2026-08-22 20:16–21:26 UTC): **0 reranker OOMs, 0 500s, 0 fallbacks in all four** — 27B default rag-e2e TTFT 2.2/2.6/4.0 s @c1/c4/c8; 9B W8A8 @8K 0.38/0.64/0.81 s; 9B BF16 @8K 0.49/0.78/0.86 s; MoE 0.63/1.18/1.1 s. The `cell-*.json` files now hold these runs.
 
 ## MoE cell bring-up (Qwen3.6-35B-A3B)
 

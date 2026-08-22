@@ -30,13 +30,15 @@ verified golden set. "Own best" means each model runs at the configuration its V
 |---|---|---|---|---|---|---|---|
 | Qwen3.8-27B W4A16 / vLLM, 16K, util 0.90 | — (primary) | 16.6 GiB | 3.8 GiB (47.9K) | emb CPU, rerank GPU@512 | 51 / 352 / **593 @c16** | 2.3 s / **fails @c4** (vLLM OOM with the co-resident reranker) | _pending_ |
 | Qwen3.8-27B W4A16, 8K, util 0.88, seqs 24 | co-residency variant A | 16.6 GiB | 1.27 GiB (12.5K) | emb CPU, rerank GPU@512 | 51 / 275 / 275 @c8 (KV-bound) | 2.2 s / 26 s (queueing, **0 errors**, peak 23.2 GB) | _pending_ |
-| **Qwen3.8-27B W4A16, 16K, util 0.90, seqs 24, prefill chunk 2048** | co-residency variant B — **adopted default** | 16.6 GiB | 1.74 GiB (21.8K) | emb CPU, rerank GPU@512 | 51 / 352 / 352 @c8 (KV-bound) | 2.2 s / 20 s; **3.1 s @c4**; **0 errors**, peak 23.1 GB | _pending_ |
+| **Qwen3.8-27B W4A16, 16K, util 0.90, seqs 24, prefill chunk 2048** | co-residency variant B — **adopted default** | 16.6 GiB | 1.74 GiB (21.8K) | emb CPU, rerank GPU@512 | 51 / 352 / 352 @c8 (KV-bound) | **2.2 s / 4.0 s; 2.6 s @c4; 0 errors, 0 fallbacks** (guarded re-measure) | _pending_ |
 | Qwen3.8-27B W4A16, 8K, util 0.90, seqs 24, prefill chunk 2048 | co-residency variant C | 16.6 GiB | **3.82 GiB (38.1K)** | emb CPU, rerank GPU@512 | 51 / 353 / 593 @c16 | 2.2 s / 2.5 s† (c8/c16 fell back to no-rerank after 65 reranker OOMs) | _pending_ |
 | Qwen3.8-27B W4A16, 8K, util 0.88, seqs 24, prefill chunk 2048 | co-residency variant D | 16.6 GiB | 3.35 GiB (33.7K) | emb CPU, rerank GPU@512 | 51 / 353 / 593 @c16 | 2.2 s / 4.8 s; 3.9 s @c4; 0 fallbacks, 30 reranker OOMs recovered in-service | _pending_ |
 | Qwen3.5-9B W4A16 / vLLM, 32K, util 0.80 | size | 9.5 GiB | 6.6 GiB (195.7K) | emb GPU, rerank GPU@1024 | **95 / 697 / 1,508 @c32** | 0.41 s / 0.97 s (13 reranker OOMs recovered) | _pending_ |
 | **Qwen3.5-9B W4A16 / vLLM, 8K, util 0.80** | size — **own-best, adopted 9B config** | 9.5 GiB | 6.6 GiB (153.4K, 18.7× at 8K) | emb GPU, rerank GPU@1024 | **95 / 697 / 1,503 @c32** | **0.42 s / 1.10 s — zero OOMs, zero fallbacks, peak 23.2 GB** | _pending_ |
-| Qwen3.5-9B BF16 / vLLM, 32K, util 0.90 | quantization (none vs 4-bit) | 16.8 GiB | 2.2 GiB (64.1K) | emb CPU, rerank GPU@1024 | 51 / 386 / 917 @c32 | 1.0 s / 1.9 s | _pending_ |
-| Qwen3.5-9B W8A8 / vLLM, 32K, util 0.85 | quantization (int8 W+A vs 4-bit W) | 11.9 GiB | 5.9 GiB (174.3K) | emb GPU, rerank GPU@1024 | 71 / 533 / 1,296 @c32 | 0.36 s / 0.45 s† | _pending_ |
+| Qwen3.5-9B BF16 / vLLM, 32K, util 0.90 | quantization (none vs 4-bit) | 16.8 GiB | 2.2 GiB (64.1K) | emb CPU, rerank GPU@1024 | 51 / 386 / 917 @c32 | 1.0 s / 1.9 s (pre-guard) | _pending_ |
+| **Qwen3.5-9B BF16 / vLLM, 8K, util 0.90** | same, own-best | 16.8 GiB | 3.9 GiB (89.4K) | emb CPU, rerank GPU@1024 | 51 / 387 / 968 @c32 | **0.49 s / 0.86 s; 0 errors, 0 fallbacks** | _pending_ |
+| Qwen3.5-9B W8A8 / vLLM, 32K, util 0.85 | quantization (int8 W+A vs 4-bit W) | 11.9 GiB | 5.9 GiB (174.3K) | emb GPU, rerank GPU@1024 | 71 / 533 / 1,296 @c32 | 0.36 s / 0.45 s† (pre-guard) | _pending_ |
+| **Qwen3.5-9B W8A8 / vLLM, 8K, util 0.80** | same, own-best | 11.9 GiB | 6.4 GiB (147.8K) | emb GPU, rerank GPU@1024 | 71 / 535 / 1,296 @c32 | **0.38 s / 0.81 s; 0 errors, 0 fallbacks** | _pending_ |
 | **Qwen3.6-35B-A3B int4 (Intel AutoRound) / vLLM, 8K, util 0.90** | dense → MoE (256 experts, 8 active) | 18.9 GiB | 0.6 GiB (17.0K) | emb CPU, rerank GPU@512 | **159 / 670 / 674 @c8 (KV-bound)** | 0.62 s / 5.6 s (re-measure pending) | _pending_ |
 | Qwen3.8-27B UD-Q4_K_M / llama.cpp (+MTP) | engine | | | | _pending_ (single-stream focus) | | |
 
@@ -65,7 +67,7 @@ verified golden set. "Own best" means each model runs at the configuration its V
    goes 263 ms @c1 → 782 ms @c8 → 1.4 s @c16 (queueing behind the serialized cross-encoder), and rerank OOM-recovery
    fired 13 times at that placement (0 failed requests). Cross-request batching and smaller reranker inputs are the
    next levers; the measurement that decides between them is the golden-set recall at `max_length` 512 vs 1024.
-**Erratum:** rag-e2e rows measured before commit `9216c4a` ran with an *unserialized* reranker (the concurrency guard was defined but not wired to the handler); wherever the rerank stage reads ~15–20 ms the gateway had fallen back to the fused order. Those rows are being re-measured; see the erratum in [m3-baseline.md](../benchmarks/m3-baseline.md).
+**Erratum (resolved):** rag-e2e rows measured before commit `9216c4a` ran with an *unserialized* reranker (the concurrency guard was defined but not wired to the handler). The four affected configurations were re-measured with the guard in place: **zero reranker OOMs, zero 500s and zero fallbacks in all of them**, and the bold rows above are those re-measurements. Rows marked *pre-guard* are kept for the record; see [m3-baseline.md](../benchmarks/m3-baseline.md).
 
 † At gateway c8/c16 the W8A8 cell's reranker OOMed (57 events, all caught) and most requests fell back to the fused
    order, so those TTFT/throughput figures are effectively *no-rerank* numbers; c1/c4 are genuine. The cell was
