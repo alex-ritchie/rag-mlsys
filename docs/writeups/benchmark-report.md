@@ -41,6 +41,7 @@ Each pairwise comparison varies exactly one factor:
 | reasoning on | `…/vllm-reasoning-on.yaml` | _pending_ | Thinking dominates TTFT; measured, not assumed. |
 | llama.cpp MTP draft depth {0,2,3,4} | `…/llamacpp-mtp-n*.yaml` | _pending_ | Where does MTP stop paying? |
 | llama.cpp KV f16 vs q4_0 | `…/llamacpp-kv-q4_0.yaml` | _pending_ | Memory vs. acceptance rate. |
+| reranker: max_length 1024 → 512, top-30 → top-20, cross-request batching | (gateway target) | measured ceiling: ~3.9 req/s, rerank p50 1.9 s @ c8 with a zero-cost LLM ([m2-retrieval.md](../benchmarks/m2-retrieval.md)) | The cross-encoder is the first non-GPU-tier bottleneck; fix before scaling the gateway. |
 
 ## 4. Framing questions (answered with numbers once M8 lands)
 

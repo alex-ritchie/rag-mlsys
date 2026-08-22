@@ -8,7 +8,7 @@ args:
   spec-type: draft-mtp
   spec-draft-n-max: 3                # sweep {0,2,3,4} in M8
   c: 32768
-  ngl: 99
+  n-gpu-layers: 99
   parallel: 1                        # MTP advantage decays by ~4 concurrent streams
   # cache-type-k: q4_0               # sweep f16 vs q4_0 in M8
   # cache-type-v: q4_0

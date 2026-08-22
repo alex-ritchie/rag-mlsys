@@ -7,6 +7,7 @@ import asyncio
 import shutil
 import subprocess
 from datetime import UTC, datetime
+from pathlib import Path
 
 from mlsys_common.settings import REPO_ROOT, get_settings
 from mlsys_gateway.app import build_deps
@@ -31,10 +32,20 @@ def git_sha() -> str:
 
 
 async def main_async(
-    retrieval_only: bool, fake_judge: bool, limit: int | None, run_id: str | None
+    retrieval_only: bool,
+    fake_judge: bool,
+    limit: int | None,
+    run_id: str | None,
+    golden: str | None = None,
+    stamp: str | None = None,
+    update_latest: bool = True,
 ) -> EvalReport:
     s = get_settings()
-    items = load_verified_golden()
+    items = (
+        load_verified_golden(Path(golden), Path(stamp))
+        if golden and stamp
+        else load_verified_golden()
+    )
     if limit:
         items = items[:limit]
     deps = build_deps(s)
@@ -98,11 +109,15 @@ async def main_async(
     out.mkdir(parents=True, exist_ok=True)
     (out / "report.json").write_text(report.model_dump_json(indent=2))
     (out / "summary.md").write_text(render_markdown(report))
-    latest = RESULTS / "latest"
-    latest.mkdir(exist_ok=True)
-    shutil.copy(out / "report.json", latest / "report.json")
-    shutil.copy(out / "summary.md", latest / "summary.md")
-    print(f"wrote {out}/report.json and summary.md (copied to eval/results/latest/)")
+    if update_latest:
+        latest = RESULTS / "latest"
+        latest.mkdir(exist_ok=True)
+        shutil.copy(out / "report.json", latest / "report.json")
+        shutil.copy(out / "summary.md", latest / "summary.md")
+    print(
+        f"wrote {out}/report.json and summary.md"
+        + (" (copied to eval/results/latest/)" if update_latest else "")
+    )
     return report
 
 
@@ -116,8 +131,19 @@ def main() -> None:
     )
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--run-id", default=None)
+    ap.add_argument("--golden", default=None, help="alternate golden.jsonl (with --stamp)")
+    ap.add_argument("--stamp", default=None)
+    ap.add_argument(
+        "--no-latest",
+        action="store_true",
+        help="do not copy into eval/results/latest/ (plumbing runs)",
+    )
     a = ap.parse_args()
-    asyncio.run(main_async(a.retrieval_only, a.fake_judge, a.limit, a.run_id))
+    asyncio.run(
+        main_async(
+            a.retrieval_only, a.fake_judge, a.limit, a.run_id, a.golden, a.stamp, not a.no_latest
+        )
+    )
 
 
 if __name__ == "__main__":

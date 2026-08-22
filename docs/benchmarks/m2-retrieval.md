@@ -18,3 +18,23 @@ chapters (e.g. *pruning* → Ch 10 structured/unstructured pruning sections; *da
 the reranker's sigmoid scores saturate near 1.0 on easy queries, so `rag_retrieval_score_p50` will sit high until
 queries drift; FTS contributes mainly on acronym/keyword questions (MLPerf, KV cache) and is absent (`f=None`) on
 paraphrased ones — the expected hybrid behaviour.
+
+## Load-generator validation run (fake LLM, real index, 2026-08-21)
+
+`mlsys_bench` against the gateway with `LLM_MODEL=fake` (generation cost ≈ 0), GPU embedder + GPU reranker services,
+16 requests per level. With no model time, this isolates the **pre-generation pipeline ceiling**:
+
+| conc | req/s | TTFT p50 / p99 (ms) | rerank p50 (ms) |
+|---|---|---|---|
+| 1 | ~3.9 | ~270 / ~330 | ~260 |
+| 4 | 3.88 | 997 / 1199 | ~950 |
+| 8 | 3.85 | 2011 / 2612 | 1914 |
+
+**Finding:** throughput flat-lines at ~3.9 req/s from c1 onward and TTFT grows linearly with concurrency — the
+reranker service (one uvicorn worker, one cross-encoder call per request at max_length 1024 over 30 × ~700-token
+pairs) is a serial ~260 ms stage, so requests queue behind it. Embedding (9 ms) and the hybrid SQL (3 ms) are
+negligible. This is now an explicit M8 lever row: cross-request batching in the reranker, `max_length` 512,
+rerank top-20 instead of top-30, or int8 ONNX on CPU cores in parallel. In production the LLM's own decode time
+(seconds) will hide part of this at low concurrency, but at c8+ the reranker — not the gateway — is the first
+non-GPU-tier bottleneck, which is exactly the kind of measurement the HPA discussion needs (scaling the gateway
+would not help here; scaling or batching the reranker would).
