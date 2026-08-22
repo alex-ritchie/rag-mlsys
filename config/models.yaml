@@ -46,10 +46,10 @@ llm:
     display: "Qwen3.6-35B-A3B AWQ int4 (vLLM)"
     engine: vllm
     repo_candidates:
-      - cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit        # newest AWQ build (2026-07), chosen 2026-08-22
-      - QuantTrio/Qwen3.6-35B-A3B-AWQ            # fallback (2026-04)
-      - Intel/Qwen3.6-35B-A3B-int4-mixed-AutoRound  # smallest on disk (21.5 GB), mixed precision
-    serving_config: config/serving/vllm-qwen36-35b-a3b.yaml
+      - Intel/Qwen3.6-35B-A3B-int4-mixed-AutoRound  # chosen 2026-08-22: attention quantized too -> ~19.2 GiB on GPU (the only build that leaves KV room on 24 GB)
+      - cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit        # attention left in F16 -> 22.0 GiB on GPU: OOMs in torch.compile on the 3090 Ti
+      - QuantTrio/Qwen3.6-35B-A3B-AWQ            # same layout as cyankiwi
+    serving_config: config/serving/vllm-qwen36-35b-a3b-intel.yaml
     varies: "dense vs MoE, same family"
   engine_ablation:
     name: qwen38-27b-gguf-ud-q4km

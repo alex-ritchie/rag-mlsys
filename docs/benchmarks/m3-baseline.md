@@ -57,6 +57,13 @@ cheapest first:
 
 | 10 | **8K, util 0.88, seqs 24, prefill 2048** + GPU reranker@512 (M8 variant D) | stable for users, **not adopted** | KV **3.35 GiB (33,731 tokens, 4.12× at 8K)** — twice variant B's pool; LLM-only identical (593 tok/s @c16). rag-e2e: 0 failed answers, 0 fallbacks, but the reranker hit OOM 30× at c8/c16 and recovered in-service (halved batches), and TTFT was no better than B (2.2 s @c1, 3.9 s @c4, 4.8 s @c8 vs B's 2.2 / 3.1 / 20 s). Peak 24.1 GB. Conclusion: beside a co-resident reranker the 27B is bounded by *slack*, not KV — more KV does not convert into lower rag-e2e latency until the reranker stops competing for the last gigabyte. |
 
+## MoE cell bring-up (Qwen3.6-35B-A3B)
+
+| # | Build | Outcome | Measured |
+|---|---|---|---|
+| 1 | `cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit`, 8K, util 0.90, bounded, CUDA graphs | **OOM inside torch.compile** (`Tried to allocate 970 MiB … 973 MiB free`) | **22.03 GiB of weights** on the GPU. Safetensors header audit: experts int4 15.9 GiB + expert scales/zeros F16 1.9 GiB + **attention left in F16 2.4 GiB** + embeddings/lm_head F16 1.9 GiB (+0.8 GiB vision, skipped). A 35B MoE at "4-bit" is not 17.5 GB when the attention stack and the quantization metadata stay in half precision. |
+| 2 | `Intel/Qwen3.6-35B-A3B-int4-mixed-AutoRound` — attention quantized (0.5 GiB int4 + 0.5 GiB BF16), same expert footprint | _queued_: expected ~19.2 GiB on GPU → ~4 GB for KV/compile/reranker | CUDA graphs first; `--enforce-eager` fallback if compile OOMs. |
+
 Environment: vLLM 0.27.1 (+cu129 wheel), torch 2.13.0+cu129, transformers 5.15.1, driver 575.57 (CUDA 12.9),
 model `dbirks/Qwen3.8-27B-W4A16-AutoRound` (compressed-tensors pack-quantized, group 128, symmetric int4),
 architecture `Qwen3_5ForConditionalGeneration` (64 layers: full + linear attention), attention block size auto-set to
