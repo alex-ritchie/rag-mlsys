@@ -17,6 +17,7 @@ import typer
 from mlsys_common.db import make_engine
 from mlsys_common.settings import get_settings
 from rich.console import Console
+from rich.markup import escape
 from rich.panel import Panel
 from rich.prompt import Prompt
 from sqlalchemy import text
@@ -262,12 +263,12 @@ def verify(
                 console.rule(f"[{i + 1}/{len(todo)}] {c.id}  type={c.type}  {c.chapter}")
                 for h in c.source_chunk_content_hashes:
                     hp, txt = await chunk_text(h)
-                    console.print(Panel(txt[:2500], title=hp, subtitle=h[:12], expand=False))
-                console.print(f"[bold cyan]Q:[/] {c.question}")
+                    console.print(Panel(escape(txt[:2500]), title=escape(hp), subtitle=h[:12], expand=False))
+                console.print(f"[bold cyan]Q:[/] {escape(c.question)}")
                 for kp in c.answer_key_points:
-                    console.print(f"   • {kp}")
+                    console.print(f"   • {escape(kp)}")
                 if c.notes:
-                    console.print(f"   [dim]{c.notes}[/]")
+                    console.print(f"   [dim]{escape(c.notes)}[/]")
                 choice = Prompt.ask(
                     r"\[a]ccept / \[e]dit / \[r]eject / \[q]uit",
                     choices=["a", "e", "r", "q"],
