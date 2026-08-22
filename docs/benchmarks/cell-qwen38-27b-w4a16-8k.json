@@ -1,0 +1,243 @@
+{
+  "tag": "qwen38-27b-w4a16-8k",
+  "serving_config": "config/serving/vllm-qwen38-27b-8k.yaml",
+  "model": "qwen38-27b-w4a16",
+  "load_seconds": 110,
+  "weights": "Model loading took 16.59 GiB",
+  "kv": "Available KV cache memory: 1.27 GiB",
+  "kv_tokens": "GPU KV cache size: 12,528 tokens",
+  "max_concurrency_at_full_context": "Maximum concurrency for 8,192 tokens per request: 1.53x",
+  "vram_mib": {
+    "vllm_only": null,
+    "with_embedder_reranker": 20469,
+    "peak_gateway_load": 23171
+  },
+  "placement": {
+    "embedder": "cpu",
+    "reranker": "gpu",
+    "reranker_max_length": 512
+  },
+  "oom_or_cuda_errors": 0,
+  "gateway_500s": 0,
+  "vllm_alive_after": null,
+  "engine_direct": [
+    {
+      "concurrency": 1,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 480.66,
+      "requests_per_s": 0.1,
+      "output_tokens_per_s": 51.1,
+      "ttft_ms": {
+        "p50": 37.5,
+        "p90": 38.1,
+        "p99": 38.8
+      },
+      "total_ms": {
+        "p50": 10013.7,
+        "p90": 10014.3,
+        "p99": 10014.7
+      },
+      "stage_ms_p50": {},
+      "error_samples": []
+    },
+    {
+      "concurrency": 4,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 135.88,
+      "requests_per_s": 0.353,
+      "output_tokens_per_s": 180.9,
+      "ttft_ms": {
+        "p50": 110.0,
+        "p90": 111.4,
+        "p99": 114.1
+      },
+      "total_ms": {
+        "p50": 11322.9,
+        "p90": 11323.8,
+        "p99": 11329.9
+      },
+      "stage_ms_p50": {},
+      "error_samples": []
+    },
+    {
+      "concurrency": 8,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 89.45,
+      "requests_per_s": 0.537,
+      "output_tokens_per_s": 274.8,
+      "ttft_ms": {
+        "p50": 143.3,
+        "p90": 11180.8,
+        "p99": 11307.1
+      },
+      "total_ms": {
+        "p50": 11225.5,
+        "p90": 22276.0,
+        "p99": 22384.0
+      },
+      "stage_ms_p50": {},
+      "error_samples": []
+    },
+    {
+      "concurrency": 16,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 89.51,
+      "requests_per_s": 0.536,
+      "output_tokens_per_s": 274.6,
+      "ttft_ms": {
+        "p50": 22451.7,
+        "p90": 22518.7,
+        "p99": 22519.3
+      },
+      "total_ms": {
+        "p50": 33535.6,
+        "p90": 33572.4,
+        "p99": 33573.1
+      },
+      "stage_ms_p50": {},
+      "error_samples": []
+    },
+    {
+      "concurrency": 32,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 89.5,
+      "requests_per_s": 0.536,
+      "output_tokens_per_s": 274.6,
+      "ttft_ms": {
+        "p50": 44818.8,
+        "p90": 55975.0,
+        "p99": 56058.6
+      },
+      "total_ms": {
+        "p50": 55899.9,
+        "p90": 67031.8,
+        "p99": 67126.3
+      },
+      "stage_ms_p50": {},
+      "error_samples": []
+    }
+  ],
+  "gateway_e2e": [
+    {
+      "concurrency": 1,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 223.01,
+      "requests_per_s": 0.143,
+      "output_tokens_per_s": 34.7,
+      "ttft_ms": {
+        "p50": 2230.5,
+        "p90": 2416.6,
+        "p99": 2622.3
+      },
+      "total_ms": {
+        "p50": 6840.2,
+        "p90": 9629.5,
+        "p99": 12489.8
+      },
+      "stage_ms_p50": {
+        "embed_ms": 72.6,
+        "retrieve_ms": 3.3,
+        "rerank_ms": 171.7,
+        "ttft_ms": 2229.6,
+        "generate_ms": 6587.4,
+        "total_ms": 6827.9
+      },
+      "error_samples": []
+    },
+    {
+      "concurrency": 4,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 150.65,
+      "requests_per_s": 0.212,
+      "output_tokens_per_s": 53.2,
+      "ttft_ms": {
+        "p50": 9416.0,
+        "p90": 12587.2,
+        "p99": 15916.4
+      },
+      "total_ms": {
+        "p50": 18795.5,
+        "p90": 25726.7,
+        "p99": 30841.4
+      },
+      "stage_ms_p50": {
+        "embed_ms": 72.3,
+        "retrieve_ms": 3.3,
+        "rerank_ms": 369.5,
+        "ttft_ms": 9415.2,
+        "generate_ms": 18344.1,
+        "total_ms": 18783.6
+      },
+      "error_samples": []
+    },
+    {
+      "concurrency": 8,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 147.03,
+      "requests_per_s": 0.218,
+      "output_tokens_per_s": 52.6,
+      "ttft_ms": {
+        "p50": 26065.6,
+        "p90": 33085.3,
+        "p99": 37075.2
+      },
+      "total_ms": {
+        "p50": 35993.8,
+        "p90": 42790.7,
+        "p99": 45181.5
+      },
+      "stage_ms_p50": {
+        "embed_ms": 88.2,
+        "retrieve_ms": 3.3,
+        "rerank_ms": 370.1,
+        "ttft_ms": 26064.8,
+        "generate_ms": 34057.0,
+        "total_ms": 35991.8
+      },
+      "error_samples": []
+    },
+    {
+      "concurrency": 16,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 148.45,
+      "requests_per_s": 0.216,
+      "output_tokens_per_s": 52.8,
+      "ttft_ms": {
+        "p50": 60826.8,
+        "p90": 68467.3,
+        "p99": 71317.7
+      },
+      "total_ms": {
+        "p50": 72217.2,
+        "p90": 76797.6,
+        "p99": 82432.6
+      },
+      "stage_ms_p50": {
+        "embed_ms": 83.0,
+        "retrieve_ms": 3.7,
+        "rerank_ms": 371.9,
+        "ttft_ms": 60826.1,
+        "generate_ms": 69425.5,
+        "total_ms": 72195.7
+      },
+      "error_samples": []
+    }
+  ],
+  "bench_files": [
+    "bench/results/20260822T075309Z-cell-qwen38-27b-w4a16-8k-direct.json",
+    "bench/results/20260822T080517Z-cell-qwen38-27b-w4a16-8k-gateway.json"
+  ],
+  "vllm_version": {
+    "version": "0.27.1"
+  },
+  "note": "JSON reconstructed from bench results + logs (the in-script writer failed silently); vllm_only VRAM and alive flag not captured"
+}

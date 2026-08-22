@@ -34,7 +34,7 @@ def render(cells: list[dict]) -> str:
         v = c["vram_mib"]
         pl = c["placement"]
         out.append(
-            f"| `{c['tag']}` | {c['weights'].replace('Model loading took ', '')} | {c['kv'].replace('Available KV cache memory: ', '')} ({c['kv_tokens'].replace('GPU KV cache size: ', '')}) | {c['max_concurrency_at_full_context'].split(': ')[-1]} | {pl['embedder']} / {pl['reranker']}@{pl['reranker_max_length']} | {v['vllm_only']} / {v['with_embedder_reranker']} / {v['peak_gateway_load']} MiB | {d.get(8, {}).get('output_tokens_per_s', '-')} | {d.get(1, {}).get('ttft_ms', {}).get('p50', '-')} | {g.get(1, {}).get('ttft_ms', {}).get('p50', '-')} | {g.get(8, {}).get('total_ms', {}).get('p50', '-')} | {c['oom_or_cuda_errors']} oom, {c['gateway_500s']} 5xx |"
+            f"| `{c['tag']}` | {c['weights'].replace('Model loading took ', '')} | {c['kv'].replace('Available KV cache memory: ', '')} ({c['kv_tokens'].replace('GPU KV cache size: ', '')}) | {c['max_concurrency_at_full_context'].split(': ')[-1]} | {pl['embedder']} / {pl['reranker']}@{pl['reranker_max_length']} | {v.get('vllm_only') or '?'} / {v['with_embedder_reranker']} / {v['peak_gateway_load']} MiB | {d.get(8, {}).get('output_tokens_per_s', '-')} | {d.get(1, {}).get('ttft_ms', {}).get('p50', '-')} | {g.get(1, {}).get('ttft_ms', {}).get('p50', '-')} | {g.get(8, {}).get('total_ms', {}).get('p50', '-')} | {c['oom_or_cuda_errors']} oom, {c['gateway_500s']} 5xx |"
         )
     for c in cells:
         out += [
