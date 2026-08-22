@@ -1,0 +1,27 @@
+# Co-residency variant D: 8K context, util 0.88, bounded prefill — C but with slack for the reranker.
+# Primary model (spec §5.4). Every benchmark result JSON embeds this file.
+engine: vllm
+model: dbirks/Qwen3.8-27B-W4A16-AutoRound
+served_model_name: qwen38-27b-w4a16
+port: 8003
+args:
+  max-model-len: 8192               # RAG prompts are 3-4.5K tokens; no conversation memory in v1
+  gpu-memory-utilization: 0.88        # variant D: ~0.5 GB more slack for the co-resident reranker than C
+  enable-prefix-caching: true
+  reasoning-parser: qwen3
+  language-model-only: true          # skip the vision tower (flag name per Qwen3.6 recipes; verify at M3)
+  max-num-seqs: 24
+  max-num-batched-tokens: 2048      # bound the prefill chunk => bounded transient activations beside the co-resident reranker
+  dtype: auto
+  trust-remote-code: true
+  # quantization is auto-detected from config.json (compressed-tensors pack-quantized -> Marlin int4 on sm_86)
+  # enforce-eager: true              # escape hatch if CUDA-graph capture OOMs; record which mode ran
+  # speculative-config: '{"method":"mtp","num_speculative_tokens":2}'   # M8 lever
+env:
+  VLLM_USE_V1: "1"
+notes: |
+  Ampere (sm_86): no FP8/NVFP4 kernels. W4A16 compressed-tensors runs through Marlin.
+  M3 (2026-08-22, vLLM 0.27.1+cu129, torch 2.13.0+cu129, transformers 5.15.1): weights 16.84 GiB.
+  Final placement (attempt 5): util 0.90 + 16K context + bge-reranker-v2-m3 fp16 on the same GPU at
+  max_length 512 -> 23.66 GB peak under an 8-way burst, no OOM; rerank 170-470 ms vs 22 s on CPU.
+  Embedder stays on CPU (71 ms). Full attempt log: docs/benchmarks/m3-baseline.md.
