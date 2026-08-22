@@ -14,12 +14,15 @@ cd "$(dirname "$0")/.."
 ROOT=$PWD
 LOGS=$ROOT/data/logs; mkdir -p "$LOGS"
 export PATH="$HOME/.local/opt/node/bin:$PATH"
-export HF_HOME="${HF_HOME:-$ROOT/data/hf-cache}"
-# pin the hub cache under HF_HOME: a stray HF_HUB_CACHE/TRANSFORMERS_CACHE in the shell would make vLLM look elsewhere
-export HF_HUB_CACHE="$HF_HOME/hub"; unset TRANSFORMERS_CACHE HUGGINGFACE_HUB_CACHE
+# All models live in the repo cache. Ignore HF_HOME / HF_HUB_CACHE / TRANSFORMERS_CACHE from the shell on purpose:
+# an inherited value (e.g. ~/.cache/huggingface) made vLLM fail with "Cannot find an appropriate cached snapshot".
+# Override only with MLSYS_HF_HOME.
+export HF_HOME="${MLSYS_HF_HOME:-$ROOT/data/hf-cache}"
+export HF_HUB_CACHE="$HF_HOME/hub"; unset TRANSFORMERS_CACHE HUGGINGFACE_HUB_CACHE HF_HUB_OFFLINE
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 # models are cached after the first run; skip the hub round-trip (which can stall on a slow connection)
-[[ -d "$HF_HOME/hub/models--BAAI--bge-m3" && -d "$HF_HOME/hub/models--BAAI--bge-reranker-v2-m3" ]] && export HF_HUB_OFFLINE="${HF_HUB_OFFLINE:-1}"
+[[ -d "$HF_HOME/hub/models--BAAI--bge-m3" && -d "$HF_HOME/hub/models--BAAI--bge-reranker-v2-m3" ]] && export HF_HUB_OFFLINE=1
+echo "   HF cache: $HF_HOME (offline=${HF_HUB_OFFLINE:-0})"
 
 # ---- defaults ---------------------------------------------------------------
 export PROFILE="${PROFILE:-local}"
@@ -118,6 +121,13 @@ if [[ "$PROFILE" == "local" && "$LLM_MODEL" != "fake" ]]; then
   elif [[ "$LLM_BASE_URL" == http://localhost:8003/v1 ]]; then
     if [[ ! -x data/vllm-venv/bin/vllm ]]; then
       echo "!! vLLM is not installed (data/vllm-venv). See docs/RUN_IT_YOURSELF.md §5, or use LLM_MODEL=fake / PROFILE=demo."; exit 1
+    fi
+    LLM_REPO=$(python3 -c "import yaml;print(yaml.safe_load(open('$VLLM_CONFIG'))['model'])")
+    if ! SNAP=$(HF_HUB_OFFLINE=1 data/vllm-venv/bin/python -c "from huggingface_hub import snapshot_download; print(snapshot_download('$LLM_REPO', local_files_only=True))" 2>/dev/null); then
+      echo "!! $LLM_REPO is not in $HF_HOME/hub — downloading (HF_HUB_DISABLE_XET=1) before starting vLLM"
+      HF_HUB_OFFLINE=0 uv run python -c "from huggingface_hub import snapshot_download; snapshot_download('$LLM_REPO', max_workers=8)" || { echo "!! download failed"; exit 1; }
+    else
+      echo "   model: $LLM_REPO -> ${SNAP##*/snapshots/}"
     fi
     echo "== vllm ($VLLM_CONFIG, :8003, log: data/logs/vllm.log) — model load takes a few minutes"
     uv run python scripts/serve_vllm.py "$VLLM_CONFIG" >"$LOGS/vllm.log" 2>&1 &
