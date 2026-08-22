@@ -1,0 +1,20 @@
+# Architecture-ablation cell (spec §5.3): Qwen3.6-35B-A3B, MoE (256 experts, 8 active, ~3B active params), AWQ int4.
+# 25 GB on disk; on-GPU weights ~19-20 GiB with the vision tower skipped -> the tightest fit in the matrix, so it
+# starts from the 27B's co-residency lessons (8K context, bounded prefill, reranker@512 on the GPU, embedder on CPU).
+engine: vllm
+model: cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit
+served_model_name: qwen36-35b-a3b-awq
+port: 8003
+args:
+  max-model-len: 8192
+  gpu-memory-utilization: 0.90
+  enable-prefix-caching: true
+  reasoning-parser: qwen3
+  language-model-only: true
+  max-num-seqs: 24
+  max-num-batched-tokens: 2048
+  dtype: auto
+  trust-remote-code: true
+  enforce-eager: true               # attempt 1 OOMed inside torch.compile (970 MiB short); eager skips compile + CUDA graphs
+env:
+  VLLM_USE_V1: "1"
