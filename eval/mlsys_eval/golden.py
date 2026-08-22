@@ -240,52 +240,63 @@ def verify(
         raise typer.BadParameter(f"no candidates at {CANDIDATES_PATH}; run `make golden-generate`")
     golden = read_jsonl(GOLDEN_PATH, GoldenItem) if resume else []
     done_ids = {g.id for g in golden}
-    engine = make_engine()
-
-    async def chunk_text(h: str) -> tuple[str, str]:
-        async with engine.connect() as conn:
-            r = (
-                await conn.execute(
-                    text("SELECT heading_path, text FROM chunks WHERE content_hash = :h"), {"h": h}
-                )
-            ).first()
-        return (r[0], r[1]) if r else ("<missing>", "<chunk not found — re-ingested?>")
-
     todo = [c for c in cands if c.id not in done_ids]
     console.print(f"{len(todo)} candidates to review ({len(golden)} already verified)")
-    for i, c in enumerate(todo):
-        console.rule(f"[{i + 1}/{len(todo)}] {c.id}  type={c.type}  {c.chapter}")
-        for h in c.source_chunk_content_hashes:
-            hp, txt = asyncio.run(chunk_text(h))
-            console.print(Panel(txt[:2500], title=hp, subtitle=h[:12], expand=False))
-        console.print(f"[bold cyan]Q:[/] {c.question}")
-        for kp in c.answer_key_points:
-            console.print(f"   • {kp}")
-        if c.notes:
-            console.print(f"   [dim]{c.notes}[/]")
-        choice = Prompt.ask(
-            r"\[a]ccept / \[e]dit / \[r]eject / \[q]uit", choices=["a", "e", "r", "q"], default="a"
-        )
-        if choice == "q":
-            break
-        if choice == "r":
-            continue
-        item = GoldenItem(
-            **{k: v for k, v in c.model_dump().items() if k in GoldenItem.model_fields}
-        )
-        if choice == "e":
-            item.question = Prompt.ask("question", default=item.question)
-            kps = Prompt.ask(
-                "key points (paraphrase; separate with ' | ')",
-                default=" | ".join(item.answer_key_points),
-            )
-            item.answer_key_points = [k.strip() for k in kps.split("|") if k.strip()]
-            item.type = Prompt.ask(
-                "type", choices=["single", "multi", "unanswerable"], default=item.type
-            )  # type: ignore[assignment]
-        item.verified = True
-        golden.append(item)
-        write_jsonl(GOLDEN_PATH, golden)  # save progress after every item
+
+    async def run() -> None:
+        # one event loop for the whole session: the async engine's pool is bound to it
+        engine = make_engine()
+
+        async def chunk_text(h: str) -> tuple[str, str]:
+            async with engine.connect() as conn:
+                r = (
+                    await conn.execute(
+                        text("SELECT heading_path, text FROM chunks WHERE content_hash = :h"),
+                        {"h": h},
+                    )
+                ).first()
+            return (r[0], r[1]) if r else ("<missing>", "<chunk not found - re-ingested?>")
+
+        try:
+            for i, c in enumerate(todo):
+                console.rule(f"[{i + 1}/{len(todo)}] {c.id}  type={c.type}  {c.chapter}")
+                for h in c.source_chunk_content_hashes:
+                    hp, txt = await chunk_text(h)
+                    console.print(Panel(txt[:2500], title=hp, subtitle=h[:12], expand=False))
+                console.print(f"[bold cyan]Q:[/] {c.question}")
+                for kp in c.answer_key_points:
+                    console.print(f"   • {kp}")
+                if c.notes:
+                    console.print(f"   [dim]{c.notes}[/]")
+                choice = Prompt.ask(
+                    r"\[a]ccept / \[e]dit / \[r]eject / \[q]uit",
+                    choices=["a", "e", "r", "q"],
+                    default="a",
+                )
+                if choice == "q":
+                    break
+                if choice == "r":
+                    continue
+                item = GoldenItem(
+                    **{k: v for k, v in c.model_dump().items() if k in GoldenItem.model_fields}
+                )
+                if choice == "e":
+                    item.question = Prompt.ask("question", default=item.question)
+                    kps = Prompt.ask(
+                        "key points (paraphrase; separate with ' | ')",
+                        default=" | ".join(item.answer_key_points),
+                    )
+                    item.answer_key_points = [k.strip() for k in kps.split("|") if k.strip()]
+                    item.type = Prompt.ask(
+                        "type", choices=["single", "multi", "unanswerable"], default=item.type
+                    )  # type: ignore[assignment]
+                item.verified = True
+                golden.append(item)
+                write_jsonl(GOLDEN_PATH, golden)  # save progress after every item
+        finally:
+            await engine.dispose()
+
+    asyncio.run(run())
     write_jsonl(GOLDEN_PATH, golden)
     stamp = write_stamp(GOLDEN_PATH, STAMP_PATH)
     console.print(
