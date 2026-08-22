@@ -15,6 +15,12 @@
 
 | 5 | CUDA graphs, 16384, **util 0.90 + GPU reranker at `max_length` 512**, `PYTORCH_CUDA_ALLOC_CONF=expandable_segments` | **PASS — adopted** | Available KV cache memory: 3.8 GiB (GPU KV cache size: 47,938 tokens, 2.93× at 16K); vLLM 21.77 GB, +reranker 23.14 GB, **peak 23.66 GB** during an 8-way 400-token generation burst running concurrently with three RAG queries; 0 OOM, 0 gateway errors, vLLM alive afterwards. End to end: rerank **169–471 ms**, TTFT 2.2–2.6 s (≈2.9K-token prompt prefill while the burst occupied the batch), totals 3.6–11.5 s; the unanswerable question abstained correctly. |
 
+**`make up` with the adopted defaults (cold start, 2026-08-22):** embedder (CPU) and reranker (GPU) ready in 4 s,
+vLLM in 33 s (compile cache warm), gateway and frontend at 34 s. Question "How does data parallelism differ from
+model parallelism?": 3,511-token prompt → 233-token answer citing Vol 2 Ch 5 *Data Parallelism* / *Model Parallelism*;
+embed 104 ms · retrieve 14 ms · **rerank 282 ms** · TTFT 2.77 s · generate 6.96 s · total 7.36 s; 23.66 GB VRAM;
+Ctrl-C returned the GPU to 18 MiB.
+
 Environment: vLLM 0.27.1 (+cu129 wheel), torch 2.13.0+cu129, transformers 5.15.1, driver 575.57 (CUDA 12.9),
 model `dbirks/Qwen3.8-27B-W4A16-AutoRound` (compressed-tensors pack-quantized, group 128, symmetric int4),
 architecture `Qwen3_5ForConditionalGeneration` (64 layers: full + linear attention), attention block size auto-set to
