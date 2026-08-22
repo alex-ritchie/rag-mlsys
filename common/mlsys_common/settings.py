@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     demo_generation_model: str = "claude-haiku-4-5"
     demo_embedder: Literal["inprocess-onnx", "service"] = "inprocess-onnx"
-    demo_rerank: Literal["onnx", "off"] = "onnx"
+    demo_rerank: Literal["onnx", "off"] = "off"  # CPU reranking measured at 2.7-11 s/query: hybrid-only on the demo
     demo_rate_limit_per_day: int = 10
     demo_daily_budget_usd: float = 2.0
     demo_haiku_input_usd_per_mtok: float = 1.0

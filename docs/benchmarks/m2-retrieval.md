@@ -38,3 +38,27 @@ rerank top-20 instead of top-30, or int8 ONNX on CPU cores in parallel. In produ
 (seconds) will hide part of this at low concurrency, but at c8+ the reranker — not the gateway — is the first
 non-GPU-tier bottleneck, which is exactly the kind of measurement the HPA discussion needs (scaling the gateway
 would not help here; scaling or batching the reranker would).
+
+## CPU reranking is not viable at this chunk size (measured 2026-08-21, Ryzen 9 7900X3D)
+
+Once vLLM takes 22.9 GB of the 24 GB card (M3), the contingency ladder's first rung — reranker on CPU — was measured
+end to end: **22.6 s** for the rerank stage of a real query (fp32, 30 candidates, `max_length` 1024, default 12
+threads), i.e. a 25 s TTFT. A controlled sweep on 30 real chunks (600–800 tokens each):
+
+| backend | threads | max_length | candidates | latency |
+|---|---|---|---|---|
+| PyTorch fp32 | 12 | 1024 | 30 | 15.9 s |
+| PyTorch fp32 | 12 | 512 | 30 | 9.7 s |
+| PyTorch fp32 | 12 | 512 | 15 | **5.1 s** (best fp32) |
+| PyTorch fp32 | 24 | 1024 | 30 | 19.4 s (SMT threads hurt) |
+| ONNX Runtime int8 (dynamic, `scripts/export_onnx.py`) | 12 | 1024 | 30 | 11.3 s |
+| ONNX Runtime int8 | 12 | 512 | 30 | 5.2 s |
+| ONNX Runtime int8 | 12 | 512 | 15 | **2.7 s** (best CPU) |
+
+Even the best CPU configuration is ~3× over the 1 s rerank budget and truncates chunks to 512 tokens (losing the
+tail of most of them). Two decisions follow:
+
+1. **Local stack:** the reranker belongs on the GPU, and the VRAM for it comes from the KV budget (context length),
+   not from dropping reranking — see `docs/benchmarks/m3-baseline.md` for the measured configuration.
+2. **Hosted demo (M10):** `DEMO_RERANK=off` — hybrid retrieval only (RRF top-5 straight from the fused list). The
+   retrieval ablation in the eval report quantifies what that costs in recall/MRR.
