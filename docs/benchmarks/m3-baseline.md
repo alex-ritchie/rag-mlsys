@@ -25,8 +25,11 @@ Ctrl-C returned the GPU to 18 MiB.
 
 The adopted placement sets the cross-encoder's input window to 512 tokens per (query, chunk) pair. Chunks are 400–800
 tokens (p50 680), so for most candidates the reranker scores only the first ~450 tokens of the chunk; the tail is
-invisible to ranking (the LLM still receives the whole chunk and answers are not cut — answer length is
-`MAX_OUTPUT_TOKENS`, and a `truncated` flag in the `done` event now reports when that cap is hit). Whether the
+invisible to ranking. Answers themselves are **not** truncated: in the attempt-5 run the three answers were 368, 377
+and 73 completion tokens, all ending naturally (the console excerpts in the log were clipped to 230 characters for
+readability). Answer length is governed by `MAX_OUTPUT_TOKENS` (1024), and the `done` event's `truncated` flag —
+plus the `rag_truncated_answers_total` counter and the red *truncated* tag in the UI — now report if that cap is
+ever hit. Whether the
 blind tail hurts is an eval question (recall@5 / MRR with 512 vs 1024, on the verified golden set). Candidate fixes,
 cheapest first:
 
