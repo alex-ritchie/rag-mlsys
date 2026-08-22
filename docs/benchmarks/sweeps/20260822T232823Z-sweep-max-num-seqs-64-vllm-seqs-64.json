@@ -1,0 +1,131 @@
+{
+  "name": "sweep-max-num-seqs-64-vllm-seqs-64",
+  "created_at": "2026-08-22T23:28:23.445083+00:00",
+  "git_sha": "5dfbf6e2c526aafbc0ef7752b533baa8dfe1f90e",
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 3090 Ti",
+    "driver": "575.57.08",
+    "memory": "24564 MiB"
+  },
+  "server": {
+    "models": {
+      "object": "list",
+      "data": [
+        {
+          "id": "qwen38-27b-w4a16",
+          "object": "model",
+          "created": 1787440896,
+          "owned_by": "vllm",
+          "root": "dbirks/Qwen3.8-27B-W4A16-AutoRound",
+          "parent": null,
+          "max_model_len": 16384,
+          "permission": [
+            {
+              "id": "modelperm-84383f707580b1f4",
+              "object": "model_permission",
+              "created": 1787440896,
+              "allow_create_engine": false,
+              "allow_sampling": true,
+              "allow_logprobs": true,
+              "allow_search_indices": false,
+              "allow_view": true,
+              "allow_fine_tuning": false,
+              "organization": "*",
+              "group": null,
+              "is_blocking": false
+            }
+          ]
+        }
+      ]
+    },
+    "version": {
+      "version": "0.27.1"
+    }
+  },
+  "config": {
+    "name": "sweep-max-num-seqs-64",
+    "target": "llm-only",
+    "base_url": "http://localhost:8003/v1",
+    "model": "qwen38-27b-w4a16",
+    "serving_config": "config/serving/vllm-qwen38-27b.yaml",
+    "lever": "max-num-seqs=64",
+    "max_tokens": 512,
+    "extra_body": {
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      }
+    },
+    "concurrency": [
+      1,
+      8
+    ],
+    "requests_per_level": 32
+  },
+  "config_file": "bench/configs/sweeps/vllm-max-num-seqs-64.yaml",
+  "serving_config": {
+    "engine": "vllm",
+    "model": "dbirks/Qwen3.8-27B-W4A16-AutoRound",
+    "served_model_name": "qwen38-27b-w4a16",
+    "port": 8003,
+    "args": {
+      "max-model-len": 16384,
+      "gpu-memory-utilization": 0.9,
+      "enable-prefix-caching": true,
+      "reasoning-parser": "qwen3",
+      "language-model-only": true,
+      "max-num-seqs": 24,
+      "max-num-batched-tokens": 2048,
+      "dtype": "auto",
+      "trust-remote-code": true
+    },
+    "env": {
+      "VLLM_USE_V1": "1"
+    },
+    "notes": "Ampere (sm_86): no FP8/NVFP4 kernels. W4A16 compressed-tensors runs through Marlin.\nM3 (2026-08-22, vLLM 0.27.1+cu129, torch 2.13.0+cu129, transformers 5.15.1): weights 16.84 GiB.\nFinal placement (attempt 5 + M8 variant B): util 0.90 + 16K context + bge-reranker-v2-m3 fp16 on the same\nGPU at max_length 512, max-num-seqs 24, prefill chunk 2048 -> stable through gateway c1-c16 (0 errors,\npeak 23.1 GB); rerank 170-370 ms vs 22 s on CPU; KV 1.74 GiB => c4 usable (TTFT 3.1 s), c8+ queues.\nEmbedder stays on CPU (71 ms). Full attempt log: docs/benchmarks/m3-baseline.md.\n"
+  },
+  "reproduce": "python -m mlsys_bench.run bench/configs/sweeps/vllm-max-num-seqs-64.yaml",
+  "runs": [
+    {
+      "concurrency": 1,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 320.59,
+      "requests_per_s": 0.1,
+      "output_tokens_per_s": 51.1,
+      "ttft_ms": {
+        "p50": 38.3,
+        "p90": 39.2,
+        "p99": 39.7
+      },
+      "total_ms": {
+        "p50": 10018.5,
+        "p90": 10019.4,
+        "p99": 10020.5
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 8,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 46.53,
+      "requests_per_s": 0.688,
+      "output_tokens_per_s": 352.1,
+      "ttft_ms": {
+        "p50": 176.0,
+        "p90": 180.1,
+        "p99": 180.3
+      },
+      "total_ms": {
+        "p50": 11631.1,
+        "p90": 11635.2,
+        "p99": 11635.7
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    }
+  ]
+}
