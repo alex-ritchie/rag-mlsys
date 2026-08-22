@@ -37,7 +37,7 @@ verified golden set. "Own best" means each model runs at the configuration its V
 | **Qwen3.5-9B W4A16 / vLLM, 8K, util 0.80** | size — **own-best, adopted 9B config** | 9.5 GiB | 6.6 GiB (153.4K, 18.7× at 8K) | emb GPU, rerank GPU@1024 | **95 / 697 / 1,503 @c32** | **0.42 s / 1.10 s — zero OOMs, zero fallbacks, peak 23.2 GB** | _pending_ |
 | Qwen3.5-9B BF16 / vLLM, 32K, util 0.90 | quantization (none vs 4-bit) | 16.8 GiB | 2.2 GiB (64.1K) | emb CPU, rerank GPU@1024 | 51 / 386 / 917 @c32 | 1.0 s / 1.9 s | _pending_ |
 | Qwen3.5-9B W8A8 / vLLM, 32K, util 0.85 | quantization (int8 W+A vs 4-bit W) | 11.9 GiB | 5.9 GiB (174.3K) | emb GPU, rerank GPU@1024 | 71 / 533 / 1,296 @c32 | 0.36 s / 0.45 s† | _pending_ |
-| Qwen3.6-35B-A3B W4A16 / vLLM | dense → MoE | | | | _pending_ | | |
+| **Qwen3.6-35B-A3B int4 (Intel AutoRound) / vLLM, 8K, util 0.90** | dense → MoE (256 experts, 8 active) | 18.9 GiB | 0.6 GiB (17.0K) | emb CPU, rerank GPU@512 | **159 / 670 / 674 @c8 (KV-bound)** | 0.62 s / 5.6 s (re-measure pending) | _pending_ |
 | Qwen3.8-27B UD-Q4_K_M / llama.cpp (+MTP) | engine | | | | _pending_ (single-stream focus) | | |
 
 ### What the serving numbers already say
@@ -76,6 +76,15 @@ verified golden set. "Own best" means each model runs at the configuration its V
    16.8 GiB → 51 tok/s, W8A8 11.9 GiB → 71 tok/s, W4A16 9.5 GiB → 95 tok/s. At c32 the order holds (917 / 1,296 /
    1,508 tok/s): on Ampere, int8 activations do not buy back what the extra weight bytes cost, so W4A16 wins on
    both axes and W8A8's case rests on quality (pending the golden set).
+
+7. **MoE vs. dense (27B), same family, same 24 GB:** at c1 the MoE decodes at **159 tok/s vs 51** — ~3B active
+   parameters per token read far fewer bytes per step even though *more* weight bytes are resident (18.9 vs 16.6 GiB).
+   But those resident bytes leave only **0.6 GiB of KV (17K tokens)**, so aggregate throughput saturates at
+   **674 tok/s from c8** (the 27B reaches 593 @c16; the 9B W4A16 1,503 @c32) and rag-e2e TTFT climbs from
+   0.62 s @c1 to 5.6 s @c8 as requests queue for KV blocks.
+   The MoE's per-stream advantage is real; its throughput advantage does not survive a 24 GB card because the
+   experts' weights, not the active compute, set the KV budget. (Earlier: the AWQ build left attention in F16 and
+   did not fit at all — see the MoE bring-up table in m3-baseline.md.)
 
 5. **Reliability under co-residency is a first-class result.** Every GPU OOM in these runs was the reranker's, and
    every one was recovered by the halve-and-retry path; the one failure that took vLLM down happened when vLLM itself

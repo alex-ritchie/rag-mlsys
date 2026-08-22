@@ -1,0 +1,262 @@
+{
+  "tag": "qwen36-35b-a3b-int4",
+  "serving_config": "config/serving/vllm-qwen36-35b-a3b-intel.yaml",
+  "model": "qwen36-35b-a3b-int4",
+  "serving_args": {
+    "max-model-len": 8192,
+    "gpu-memory-utilization": 0.9,
+    "enable-prefix-caching": true,
+    "reasoning-parser": "qwen3",
+    "language-model-only": true,
+    "max-num-seqs": 24,
+    "max-num-batched-tokens": 2048,
+    "dtype": "auto",
+    "trust-remote-code": true
+  },
+  "load_seconds": null,
+  "weights": "Model loading took 18.87 GiB",
+  "kv": "Available KV cache memory: 0.6 GiB",
+  "kv_tokens": "GPU KV cache size: 16,969 tokens",
+  "max_concurrency_at_full_context": "Maximum concurrency for 8,192 tokens per request: 2.07x",
+  "vram_mib": {
+    "vllm_only": null,
+    "with_embedder_reranker": null,
+    "peak_gateway_load": 22801
+  },
+  "placement": {
+    "embedder": "cpu",
+    "reranker": "gpu",
+    "reranker_max_length": 512
+  },
+  "oom_or_cuda_errors": 0,
+  "gateway_500s": 0,
+  "vllm_alive_after": null,
+  "llm_only": [
+    {
+      "concurrency": 1,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 154.78,
+      "requests_per_s": 0.31,
+      "output_tokens_per_s": 158.8,
+      "ttft_ms": {
+        "p50": 23.4,
+        "p90": 24.6,
+        "p99": 25.7
+      },
+      "total_ms": {
+        "p50": 3224.6,
+        "p90": 3226.9,
+        "p99": 3236.0
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 4,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 49.98,
+      "requests_per_s": 0.96,
+      "output_tokens_per_s": 491.7,
+      "ttft_ms": {
+        "p50": 72.9,
+        "p90": 78.2,
+        "p99": 80.9
+      },
+      "total_ms": {
+        "p50": 4167.4,
+        "p90": 4173.8,
+        "p99": 4178.2
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 8,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 36.65,
+      "requests_per_s": 1.31,
+      "output_tokens_per_s": 670.5,
+      "ttft_ms": {
+        "p50": 68.8,
+        "p90": 5176.7,
+        "p99": 5266.4
+      },
+      "total_ms": {
+        "p50": 5253.7,
+        "p90": 10355.6,
+        "p99": 10456.4
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 16,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 36.5,
+      "requests_per_s": 1.315,
+      "output_tokens_per_s": 673.3,
+      "ttft_ms": {
+        "p50": 5299.2,
+        "p90": 10431.9,
+        "p99": 10514.7
+      },
+      "total_ms": {
+        "p50": 10443.7,
+        "p90": 15599.4,
+        "p99": 15685.3
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 32,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 36.49,
+      "requests_per_s": 1.315,
+      "output_tokens_per_s": 673.5,
+      "ttft_ms": {
+        "p50": 15691.0,
+        "p90": 20897.2,
+        "p99": 20938.9
+      },
+      "total_ms": {
+        "p50": 20845.6,
+        "p90": 26040.9,
+        "p99": 26105.7
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    }
+  ],
+  "rag_e2e": [
+    {
+      "concurrency": 1,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 66.08,
+      "requests_per_s": 0.484,
+      "output_tokens_per_s": 109.8,
+      "ttft_ms": {
+        "p50": 624.8,
+        "p90": 665.6,
+        "p99": 691.9
+      },
+      "total_ms": {
+        "p50": 1670.9,
+        "p90": 3209.6,
+        "p99": 3859.8
+      },
+      "stage_ms_p50": {
+        "embed_ms": 72.6,
+        "retrieve_ms": 3.3,
+        "rerank_ms": 176.9,
+        "ttft_ms": 623.9,
+        "generate_ms": 1402.0,
+        "total_ms": 1658.7
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 4,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 36.22,
+      "requests_per_s": 0.884,
+      "output_tokens_per_s": 186.9,
+      "ttft_ms": {
+        "p50": 1076.7,
+        "p90": 1780.1,
+        "p99": 2964.8
+      },
+      "total_ms": {
+        "p50": 3874.3,
+        "p90": 6311.7,
+        "p99": 9079.5
+      },
+      "stage_ms_p50": {
+        "embed_ms": 80.0,
+        "retrieve_ms": 3.6,
+        "rerank_ms": 340.2,
+        "ttft_ms": 1075.9,
+        "generate_ms": 3458.4,
+        "total_ms": 3862.0
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 8,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 37.72,
+      "requests_per_s": 0.848,
+      "output_tokens_per_s": 196.4,
+      "ttft_ms": {
+        "p50": 5607.9,
+        "p90": 6842.1,
+        "p99": 7542.2
+      },
+      "total_ms": {
+        "p50": 8581.3,
+        "p90": 11723.1,
+        "p99": 14008.4
+      },
+      "stage_ms_p50": {
+        "embed_ms": 78.7,
+        "retrieve_ms": 3.7,
+        "rerank_ms": 366.3,
+        "ttft_ms": 5607.0,
+        "generate_ms": 8013.6,
+        "total_ms": 8568.9
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 16,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 35.45,
+      "requests_per_s": 0.903,
+      "output_tokens_per_s": 187.1,
+      "ttft_ms": {
+        "p50": 12781.6,
+        "p90": 15133.2,
+        "p99": 17415.0
+      },
+      "total_ms": {
+        "p50": 15097.8,
+        "p90": 18517.3,
+        "p99": 22786.9
+      },
+      "stage_ms_p50": {
+        "embed_ms": 115.7,
+        "retrieve_ms": 3.7,
+        "rerank_ms": 439.3,
+        "ttft_ms": 12780.7,
+        "generate_ms": 14417.4,
+        "total_ms": 15085.4
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    }
+  ],
+  "bench_files": [
+    "bench/results/20260822T201239Z-cell-qwen36-35b-a3b-int4-llm-only.json",
+    "bench/results/20260822T201553Z-cell-qwen36-35b-a3b-int4-rag-e2e.json"
+  ],
+  "vllm_version": {
+    "version": "0.27.1"
+  }
+}

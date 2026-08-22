@@ -73,7 +73,7 @@ of the affected cells are being re-run with the guard actually in place (`9216c4
 | # | Build | Outcome | Measured |
 |---|---|---|---|
 | 1 | `cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit`, 8K, util 0.90, bounded, CUDA graphs | **OOM inside torch.compile** (`Tried to allocate 970 MiB … 973 MiB free`) | **22.03 GiB of weights** on the GPU. Safetensors header audit: experts int4 15.9 GiB + expert scales/zeros F16 1.9 GiB + **attention left in F16 2.4 GiB** + embeddings/lm_head F16 1.9 GiB (+0.8 GiB vision, skipped). A 35B MoE at "4-bit" is not 17.5 GB when the attention stack and the quantization metadata stay in half precision. |
-| 2 | `Intel/Qwen3.6-35B-A3B-int4-mixed-AutoRound` — attention quantized (0.5 GiB int4 + 0.5 GiB BF16), same expert footprint | _queued_: expected ~19.2 GiB on GPU → ~4 GB for KV/compile/reranker | CUDA graphs first; `--enforce-eager` fallback if compile OOMs. |
+| 2 | `Intel/Qwen3.6-35B-A3B-int4-mixed-AutoRound`, 8K, util 0.90, bounded, CUDA graphs | **serves** (no eager fallback needed) | weights **18.87 GiB**; KV **0.6 GiB = 16,969 tokens** (2.07× at 8K); up in 135 s. LLM-only 159 tok/s @c1 (27B: 51), 670 @c8, saturating at 674 from c8 (KV-bound). rag-e2e TTFT 0.62 s @c1, 5.6 s @c8, 0 errors; peak 22801 MiB. rag-e2e rows are re-measured in the guard-fixed chain. |
 
 Environment: vLLM 0.27.1 (+cu129 wheel), torch 2.13.0+cu129, transformers 5.15.1, driver 575.57 (CUDA 12.9),
 model `dbirks/Qwen3.8-27B-W4A16-AutoRound` (compressed-tensors pack-quantized, group 128, symmetric int4),
