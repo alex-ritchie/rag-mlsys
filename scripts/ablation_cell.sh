@@ -15,7 +15,7 @@ export DATABASE_URL=${DATABASE_URL:-postgresql://postgres:@/postgres?host=$PWD/d
 export EMBEDDER_URL=http://localhost:8001 RERANKER_URL=http://localhost:8002 LLM_BASE_URL=http://localhost:8003/v1
 MODEL=$(python3 -c "import yaml;print(yaml.safe_load(open('$CFG'))['served_model_name'])"); export LLM_MODEL=$MODEL
 LOGS=data/logs; SP=data/logs/cell-$TAG; mkdir -p "$SP" docs/benchmarks
-exec 2> >(tee -a "$SP/stderr.log" >&2)   # keep the script's own errors even when the caller filters output
+exec 2>>"$SP/stderr.log"   # keep the script's own errors (a tee process substitution here kept `wait` hanging forever)
 killtree() { local pid=$1 c; for c in $(pgrep -P "$pid" 2>/dev/null); do killtree "$c"; done; kill "$pid" 2>/dev/null || true; }
 PIDS=(); cleanup() { for p in "${PIDS[@]}"; do killtree "$p"; done; wait 2>/dev/null || true; }; trap cleanup EXIT
 vram() { nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -1; }
