@@ -47,8 +47,7 @@ This tool is designed to **run locally** on consumer-grade hardware (e.g., my RT
 > This project's code is MIT. No book text is committed anywhere in this repository — you build your own index
 > (see [LICENSING.md](LICENSING.md)).
 
-## What it isand see every retrieval
-score and latency stage that produced it.
+## What it is
 
 ```
                                   ┌─────────────────────────────────────┐
@@ -72,11 +71,36 @@ score and latency stage that produced it.
                                   └─────────────────────────────────────┘
 ```
 
-**Request lifecycle:** question → embed (bge-m3) → hybrid retrieval in one SQL round trip (dense HNSW + Postgres FTS,
-Reciprocal Rank Fusion k=60, top-30) → cross-encoder rerank (bge-reranker-v2-m3, top-5) → numbered context blocks →
-streaming generation (Qwen3.8-27B W4A16 on vLLM, one RTX 3090 Ti) → SSE: a `citations` event *before the first
-token*, then `token` events, then `done` with per-stage latencies and token usage. Every stage is a Prometheus
-histogram and a per-query log row.
+**How one question flows.** The box diagram above shows *what runs where*; the gateway is the orchestrator, so
+every stage hands its result back to the gateway, which is the only thing that ever talks to the model:
+
+```
+ browser                 gateway                  embedder      postgres      reranker        vLLM
+   │  POST /api/ask         │                        │              │             │             │
+   │ ───────────────────▶   │  1. embed question     │              │             │             │
+   │                        │ ─────────────────────▶ │              │             │             │
+   │                        │ ◀──── 1024-d vector ── │              │             │             │
+   │                        │  2. hybrid search (dense HNSW + full-text, RRF) ─▶   │             │
+   │                        │ ◀──────────── fused top-30 chunks ─── │             │             │
+   │                        │  3. rerank (question, chunk) pairs ─────────────▶   │             │
+   │                        │ ◀──────────────────── top-5 with scores ─────────── │             │
+   │ ◀── citations event ── │  (sent now: the sources are known before any text exists)        │
+   │                        │  4. build prompt = system rules + 5 numbered context blocks + question
+   │                        │ ───────────────────────────────────────────────────────────────▶ │
+   │ ◀── token, token … ─── │ ◀───────────────────────── streamed tokens ────────────────────── │
+   │ ◀── done event ─────── │  5. log query row; report per-stage timings + token usage        │
+```
+
+- **Numbered context blocks** — the five reranked chunks are pasted into the prompt as `[1] (Vol 1 > Ch 13: Model
+  Serving > LLM Serving > Memory and KV cache) <chunk text>`, `[2] …`, and the system prompt instructs the model to
+  answer *only* from those blocks and to cite them inline as `[1]`…`[5]`. That is what makes an answer checkable:
+  `[3]` in the text is block 3 in the prompt is chunk 3 in the citations event.
+- **SSE (Server-Sent Events)** — an HTTP response that stays open and delivers a sequence of small named messages
+  instead of one body, so the browser can render the answer as it is generated. Three message types are used:
+  `citations` (the five sources, with rerank and fusion scores — sent *before* generation starts, so the UI shows
+  where the answer will come from while the model is still thinking), `token` (one fragment of answer text each,
+  appended as they arrive), and `done` (the per-stage latency breakdown, token usage, and whether the model
+  abstained or was cut off). Every stage also records a Prometheus histogram and a row in the per-query log.
 
 **Headline pieces**
 
