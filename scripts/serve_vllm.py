@@ -96,10 +96,10 @@ def main() -> int:
     if a.dry_run:
         return 0
     env = {**os.environ, **{k: str(v) for k, v in cfg.get("env", {}).items()}}
-    env.setdefault("HF_HOME", str(ROOT / "data" / "hf-cache"))
-    env["HF_HUB_CACHE"] = str(
-        Path(env["HF_HOME"]) / "hub"
-    )  # ignore stray cache vars from the caller's shell
+    env["HF_HOME"] = env.get("MLSYS_HF_HOME") or str(
+        ROOT / "data" / "hf-cache"
+    )  # repo cache, regardless of the shell
+    env["HF_HUB_CACHE"] = str(Path(env["HF_HOME"]) / "hub")
     env.pop("TRANSFORMERS_CACHE", None)
     env.pop("HUGGINGFACE_HUB_CACHE", None)
     env.setdefault(
