@@ -21,9 +21,26 @@ llm:
     name: qwen35-9b-w4a16
     display: "Qwen3.5-9B W4A16 (vLLM)"
     engine: vllm
-    repo_candidates: []              # community AWQ/GPTQ; else quantize with llm-compressor (docs/recipes/)
+    repo_candidates:
+      - RedHatAI/Qwen3.5-9B-quantized.w4a16   # same compressed-tensors pack-quantized format as the 27B (chosen 2026-08-22)
+      - QuantTrio/Qwen3.5-9B-AWQ              # most-downloaded alternative (AWQ-Marlin)
+      - Intel/Qwen3.5-9B-int4-AutoRound
     serving_config: config/serving/vllm-qwen35-9b.yaml
     varies: "parameter count, same family"
+  size_ablation_bf16:
+    name: qwen35-9b-bf16
+    display: "Qwen3.5-9B BF16 (vLLM)"
+    engine: vllm
+    repo_candidates: [Qwen/Qwen3.5-9B]
+    serving_config: config/serving/vllm-qwen35-9b-bf16.yaml
+    varies: "quantization (4-bit vs none), same model"
+  size_ablation_w8a8:
+    name: qwen35-9b-w8a8
+    display: "Qwen3.5-9B W8A8 (vLLM)"
+    engine: vllm
+    repo_candidates: [RedHatAI/Qwen3.5-9B-quantized.w8a8]
+    serving_config: null                      # optional third row if time allows
+    varies: "int8 weights+activations vs W4A16"
   arch_ablation:
     name: qwen36-35b-a3b-w4a16
     display: "Qwen3.6-35B-A3B W4A16 (vLLM)"

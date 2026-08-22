@@ -1,0 +1,16 @@
+# Bonus cell: Qwen3.5-9B unquantized BF16 — "what did 4-bit cost the 9B" (the 27B cannot be run unquantized).
+engine: vllm
+model: Qwen/Qwen3.5-9B
+served_model_name: qwen35-9b-bf16
+port: 8003
+args:
+  max-model-len: 32768
+  gpu-memory-utilization: 0.90        # ~18 GB weights; reranker/embedder back on CPU for this cell if needed
+  enable-prefix-caching: true
+  reasoning-parser: qwen3
+  language-model-only: true
+  max-num-seqs: 32
+  dtype: bfloat16
+  trust-remote-code: true
+env:
+  VLLM_USE_V1: "1"
