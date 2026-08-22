@@ -62,7 +62,7 @@ concurrency: [1, 4, 8, 16]
 requests_per_level: 32
 warmup: 2
 YAML
-PEAK=$V_ALL; ( while true; do v=$(vram); [[ $v -gt $(cat "$SP/peak" 2>/dev/null || echo 0) ]] && echo $v > "$SP/peak"; sleep 2; done ) & MON=$!
+PEAK=$V_ALL; ( while true; do v=$(vram); [[ $v -gt $(cat "$SP/peak" 2>/dev/null || echo 0) ]] && echo $v > "$SP/peak"; sleep 2; done ) & MON=$!; PIDS+=($MON)  # cleanup must kill the monitor too, or `wait` hangs forever
 uv run python -m mlsys_bench.run "$SP/bench-gateway.yaml" | tee "$SP/bench-gateway.log" | grep -E "^\s+rps|^-- "
 kill $MON 2>/dev/null || true; PEAK=$(cat "$SP/peak" 2>/dev/null || echo $V_ALL)
 GATEWAY=$(ls -t bench/results/*cell-$TAG-gateway*.json | head -1)

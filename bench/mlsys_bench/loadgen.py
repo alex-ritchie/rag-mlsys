@@ -53,7 +53,12 @@ async def _one_gateway(
                 elif line.startswith("data:") and ev == "done":
                     d = json.loads(line[5:])
                     tokens = d["usage"]["completion_tokens"] or tokens
-                    stages = d["latency_breakdown"]
+                    # keep only numeric stage timings (the breakdown also carries e.g. rerank_error: str|None)
+                    stages = {
+                        k: float(v)
+                        for k, v in d["latency_breakdown"].items()
+                        if isinstance(v, int | float)
+                    }
                 elif line.startswith("data:") and ev == "error":
                     return Sample(
                         False,
