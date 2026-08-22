@@ -2,7 +2,7 @@
 
 > ## Status — 2026-08-22
 >
-> **Where things stand.** The full local stack runs end to end on the workstation: ingestion (2,815 chunks from the
+> **Where things stand.** The full local stack runs end to end on my workstation: ingestion (2,815 chunks from the
 > pinned book commit), GPU-built hybrid index, **Qwen3.8-27B W4A16 served by vLLM on the RTX 3090 Ti** (M3 passed:
 > 10-minute soak at concurrency 8, zero errors, 351 tok/s), the FastAPI gateway with SSE citations and the OpenAI
 > shim, and the React frontend — `make up` brings all of it up in one command. Real questions return correct,
@@ -23,12 +23,12 @@
 > [docs/DEVIATIONS.md](docs/DEVIATIONS.md).
 >
 > **Next steps, in order.** (1) Golden set:
-> candidates are being generated with Claude Opus 5; the owner's verification pass (`make golden-verify`) unlocks
+> candidates are generated with Claude Opus 5; the verification pass (`make golden-verify`) unlocks
 > `make eval` and every quality comparison after it. (2) Validate the Haiku judge against 30 hand labels. (3) M8:
 > the four-model ablation (9B, 35B-A3B MoE, llama.cpp+MTP) each at its *own* best VRAM configuration, plus the
 > serving and chunking sweeps (prefix caching, CUDA graphs vs eager, MTP, reasoning on/off, chunk size
 > 400/600/800, small-to-big). (4) k3s + dashboards + the HPA demo (needs `docker` group membership on the
-> workstation), then the hosted demo and the benchmark report.
+> my workstation), then the hosted demo and the benchmark report.
 
 A RAG learning companion for the two-volume textbook **[*Machine Learning Systems*](https://mlsysbook.ai/) by Vijay Janapa Reddi** (Harvard; [source](https://github.com/harvard-edge/cs249r_book), CC BY-NC-SA 4.0). Ask a question, get a grounded answer with inline citations, see everything from retrieval scores to latency breakdowns.
 
@@ -124,12 +124,12 @@ every stage hands its result back to the gateway, which is the only thing that e
 | M0 scaffold, CI, content guard | ✅ | `make ci`; `.github/workflows/ci.yml`; `scripts/guard_content.py` |
 | M1 ingestion | ✅ measured | 47 chapters → 2,815 chunks, idempotent re-run ([m2-retrieval.md](docs/benchmarks/m2-retrieval.md)) |
 | M2 index + hybrid retrieval + reranker | ✅ measured | GPU index 28 s; CPU query-embed p50 71 ms; smoke test |
-| M3 vLLM bring-up (risk milestone) | ⏳ not yet run on the GPU | procedure + tables in [m3-baseline.md](docs/benchmarks/m3-baseline.md) |
+| M3 vLLM bring-up (risk milestone) | ✅ passed, placement settled | 10-min soak @ c8: 0 errors, 351 tok/s, TTFT p50 172 ms; five-attempt log in [m3-baseline.md](docs/benchmarks/m3-baseline.md) |
 | M4 gateway (SSE, shim, metrics, demo profile) | ✅ | 34 tests incl. the official `openai` client; overhead ~5 ms |
-| M5 eval harness + golden set | 🔧 harness done; golden set needs the owner's verification pass | `make golden-generate` → `make golden-verify` → `make eval` |
-| M6 docker-compose | 🔧 written, not yet executed on this host | [DEVIATIONS.md](docs/DEVIATIONS.md) #4 |
+| M5 eval harness + golden set | 🔧 harness validated end to end; 140 candidates generated; golden set needs verification pass | `make golden-generate` → `make golden-verify` → `make eval` |
+| M6 docker-compose | 🔧 written, not yet executed (needs `docker` group) | [DEVIATIONS.md](docs/DEVIATIONS.md) #4 |
 | M7 k8s + monitoring | 🔧 manifests, dashboards, alerts, CronJob written; cluster not yet brought up | `k8s/`, `make hpa-demo` |
-| M8 benchmarks + ablations | 🔧 harness + sweep configs done; runs pending M3 | `bench/`, [benchmark-report.md](docs/writeups/benchmark-report.md) |
+| M8 benchmarks + ablations | 🔧 serving cells running (27B W4A16, 9B W4A16, 9B BF16); quality cells wait on the golden set | [ablation-serving.md](docs/benchmarks/ablation-serving.md), [benchmark-report.md](docs/writeups/benchmark-report.md) |
 | M9 frontend | ✅ | Lighthouse 100/100/96 ([lighthouse.md](docs/benchmarks/lighthouse.md)) |
 | M10 hosted demo | 🔧 demo profile + cost controls tested; Supabase/Fly/Pages deploy pending credentials | `gateway/tests/test_api.py::test_demo_profile_rate_limit_and_budget` |
 | M11 writeups | 🔧 this README, LICENSING, runbook, scaling; benchmark report awaits numbers | `docs/` |
