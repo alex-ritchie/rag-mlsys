@@ -4,6 +4,13 @@ SHELL := /bin/bash
 UV ?= uv
 PY := $(UV) run
 export PATH := $(HOME)/.local/opt/node/bin:$(PATH)
+# Local unprivileged Postgres (pgserver under data/pg): if DATABASE_URL is not set in the environment, point every
+# target at it. Env vars beat .env in pydantic-settings, so the Docker-style default in .env is only used by compose.
+ifndef DATABASE_URL
+ifneq ($(wildcard data/pg/PG_VERSION),)
+export DATABASE_URL := $(shell $(UV) run python scripts/local_db.py url 2>/dev/null | tail -1)
+endif
+endif
 
 ## ---- setup ---------------------------------------------------------------
 setup: ## Install Python workspace (CPU) + frontend deps + pre-commit hooks
