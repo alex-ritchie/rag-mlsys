@@ -264,7 +264,7 @@ def verify(
         if c.notes:
             console.print(f"   [dim]{c.notes}[/]")
         choice = Prompt.ask(
-            "[a]ccept / [e]dit / [r]eject / [q]uit", choices=["a", "e", "r", "q"], default="a"
+            r"\[a]ccept / \[e]dit / \[r]eject / \[q]uit", choices=["a", "e", "r", "q"], default="a"
         )
         if choice == "q":
             break
