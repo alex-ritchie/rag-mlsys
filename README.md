@@ -183,6 +183,7 @@ generation) is an accessibility layer so you can try the retrieval and citation 
 - Retrieval: embed 9 ms (GPU) / 71 ms p50 (CPU), hybrid SQL 3–14 ms, rerank 260 ms (GPU, 30 docs).
 - Gateway: p50 overhead ≈ 5 ms excluding model + service time; the `openai` client works unmodified against the shim.
 - Serving (M3): Qwen3.8-27B W4A16 on the 3090 Ti — weights 16.84 GiB, KV 4.78 GiB at util 0.95, 351 tok/s aggregate at concurrency 8 with TTFT p50 172 ms, zero errors over 10 minutes; final placement: util 0.90 @ 16K with the reranker on the same GPU (170–470 ms), embedder on CPU.
+- Ablation (M8, serving side): single-stream decode is bandwidth-bound — 27B W4A16 (16.6 GiB) and 9B BF16 (16.8 GiB) both 51 tok/s, 9B W4A16 (9.5 GiB) 95 tok/s; peak aggregate 593 (27B @c16) vs 917 (9B BF16) vs **1,508 tok/s** (9B W4A16 @c32); through the gateway the 9B W4A16 holds TTFT < 1 s at c8 ([ablation-serving.md](docs/benchmarks/ablation-serving.md), [benchmark-report.md](docs/writeups/benchmark-report.md)).
 - Frontend: Lighthouse performance 100, 61 KB gzipped.
 - Everything else — TTFT/tok-per-second vs concurrency, the ablation matrix, lever sweeps, HPA 1→4→1, dashboards —
   lands in `docs/benchmarks/` as the GPU milestones run. Placeholders are labelled *pending*; no number is typed by hand.

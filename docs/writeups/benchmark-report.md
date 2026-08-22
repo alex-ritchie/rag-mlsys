@@ -21,14 +21,43 @@ No number in this document is typed by hand.*
 
 ## 2. The four-model ablation matrix
 
-Each pairwise comparison varies exactly one factor:
+Each pairwise comparison varies exactly one factor. Serving columns are measured (`scripts/ablation_cell.sh`,
+2026-08-22, full tables in [ablation-serving.md](../benchmarks/ablation-serving.md)); quality columns wait on the
+verified golden set. "Own best" means each model runs at the configuration its VRAM allows, not the 27B's.
 
-| Cell | Varies vs. primary | Quality (faith / rel / abstention F1) | TTFT p50 @c1 | tok/s @c8 | p99 @c8 |
-|---|---|---|---|---|---|
-| Qwen3.8-27B W4A16 / vLLM (primary) | — | _pending_ | _pending_ | _pending_ | _pending_ |
-| Qwen3.5-9B W4A16 / vLLM | size | _pending_ | | | |
-| Qwen3.6-35B-A3B W4A16 / vLLM | dense → MoE | _pending_ | | | |
-| Qwen3.8-27B UD-Q4_K_M / llama.cpp (+MTP) | engine | _pending_ | | (single-stream) | |
+| Cell | Varies vs. primary | Weights | KV cache (tokens) | Placement | Direct tok/s @c1 / @c8 / peak | Gateway TTFT p50 @c1 / @c8 | Quality |
+|---|---|---|---|---|---|---|---|
+| Qwen3.8-27B W4A16 / vLLM, 16K, util 0.90 | — (primary) | 16.6 GiB | 3.8 GiB (47.9K) | emb CPU, rerank GPU@512 | 51 / 352 / **593 @c16** | 2.3 s / **fails @c4** (vLLM OOM with the co-resident reranker) | _pending_ |
+| Qwen3.8-27B W4A16, 8K, util 0.88 | co-residency variant | 16.6 GiB | _pending_ | emb CPU, rerank GPU@512 | _pending_ | _pending_ | _pending_ |
+| Qwen3.5-9B W4A16 / vLLM, 32K, util 0.80 | size | 9.5 GiB | **6.6 GiB (195.7K)** | emb GPU, rerank GPU@1024 | **95 / 697 / 1,508 @c32** | **0.41 s / 0.97 s** | _pending_ |
+| Qwen3.5-9B BF16 / vLLM, 32K, util 0.90 | quantization (none vs 4-bit) | 16.8 GiB | 2.2 GiB (64.1K) | emb CPU, rerank GPU@1024 | 51 / 386 / 917 @c32 | 1.0 s / 1.9 s | _pending_ |
+| Qwen3.6-35B-A3B W4A16 / vLLM | dense → MoE | | | | _pending_ | | |
+| Qwen3.8-27B UD-Q4_K_M / llama.cpp (+MTP) | engine | | | | _pending_ (single-stream focus) | | |
+
+### What the serving numbers already say
+
+1. **Single-stream decode speed is set by bytes of weights, not parameters.** 27B W4A16 (16.6 GiB) and 9B BF16
+   (16.8 GiB) both decode at **51 tok/s** at concurrency 1; 9B W4A16 (9.5 GiB) decodes at **95 tok/s** — 1.87× for
+   1.75× fewer bytes. On a 3090 Ti (1 TB/s) decode is memory-bandwidth-bound: every token streams the whole weight
+   set through the SMs, so halving the bytes roughly doubles the speed and the parameter count is irrelevant until
+   you batch. This is the "iron law" and roofline story of the book, measured on its own companion.
+2. **Batching is where the parameter count returns.** Aggregate throughput scales with concurrency until the KV cache
+   runs out: the 27B peaks at **593 tok/s @c16** and falls to 503 @c32 with p99 TTFT of 18.5 s (requests queue for
+   KV blocks); the 9B W4A16, with 4× the KV budget, keeps climbing to **1,508 tok/s @c32** with p99 TTFT of 215 ms.
+   The 9B BF16 sits between (917 @c32) — same bytes per token as the 27B but a 4× smaller KV footprint per token,
+   so more sequences fit.
+3. **The KV budget, not the weights, decides what the gateway can serve.** Through the full pipeline the 9B W4A16
+   holds TTFT under 1 s at c8; the 27B cannot complete c4 because co-residency with the reranker leaves vLLM no slack
+   (`Tried to allocate 66 MiB … 26 MiB free`). The 8K-context variant trades context the RAG path never uses for
+   that slack — its row is pending.
+4. **The reranker is the gateway's bottleneck once generation is fast.** In the 9B W4A16 cell the rerank stage p50
+   goes 263 ms @c1 → 782 ms @c8 → 1.4 s @c16 (queueing behind the serialized cross-encoder), and rerank OOM-recovery
+   fired 13 times at that placement (0 failed requests). Cross-request batching and smaller reranker inputs are the
+   next levers; the measurement that decides between them is the golden-set recall at `max_length` 512 vs 1024.
+5. **Reliability under co-residency is a first-class result.** Every GPU OOM in these runs was the reranker's, and
+   every one was recovered by the halve-and-retry path; the one failure that took vLLM down happened when vLLM itself
+   had no headroom. The knob that matters is vLLM's utilization fraction *minus* the co-resident process's peak, and
+   it has to be measured — the spec's planning table was off by ~2 GB.
 
 ## 3. Lever sweeps (primary model)
 
