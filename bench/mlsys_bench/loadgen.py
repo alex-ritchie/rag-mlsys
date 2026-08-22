@@ -64,6 +64,7 @@ async def _one_gateway(
                         for k, v in d["latency_breakdown"].items()
                         if isinstance(v, int | float)
                     }
+                    fallback = bool(d["latency_breakdown"].get("rerank_error"))
                 elif line.startswith("data:") and ev == "error":
                     return Sample(
                         False,

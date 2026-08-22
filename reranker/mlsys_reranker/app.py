@@ -91,12 +91,15 @@ async def health() -> dict:
 
 @app.post("/rerank", response_model=RerankResponse)
 async def rerank(req: RerankRequest) -> RerankResponse:
-    assert _backend is not None
-    t0 = time.perf_counter()
-    scores: np.ndarray = await anyio.to_thread.run_sync(
-        lambda: _backend.score(req.query, req.documents)
-    )
-    RERANK_LATENCY.observe(time.perf_counter() - t0)
+    assert _backend is not None and _slots is not None
+    t_q = time.perf_counter()
+    async with _slots:  # one forward pass on the GPU at a time (see the note at _slots)
+        RERANK_QUEUE.observe(time.perf_counter() - t_q)
+        t0 = time.perf_counter()
+        scores: np.ndarray = await anyio.to_thread.run_sync(
+            lambda: _score_with_oom_recovery(req.query, req.documents)
+        )
+        RERANK_LATENCY.observe(time.perf_counter() - t0)
     RERANK_DOCS.inc(len(req.documents))
     order = np.argsort(-scores)
     if req.top_k:
