@@ -15,6 +15,8 @@ ROOT=$PWD
 LOGS=$ROOT/data/logs; mkdir -p "$LOGS"
 export PATH="$HOME/.local/opt/node/bin:$PATH"
 export HF_HOME="${HF_HOME:-$ROOT/data/hf-cache}"
+# pin the hub cache under HF_HOME: a stray HF_HUB_CACHE/TRANSFORMERS_CACHE in the shell would make vLLM look elsewhere
+export HF_HUB_CACHE="$HF_HOME/hub"; unset TRANSFORMERS_CACHE HUGGINGFACE_HUB_CACHE
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 # models are cached after the first run; skip the hub round-trip (which can stall on a slow connection)
 [[ -d "$HF_HOME/hub/models--BAAI--bge-m3" && -d "$HF_HOME/hub/models--BAAI--bge-reranker-v2-m3" ]] && export HF_HUB_OFFLINE="${HF_HUB_OFFLINE:-1}"
