@@ -46,6 +46,7 @@ async def test_ask_streams_citations_tokens_done(client):
         and done["query_log_id"] is not None
         and done["abstained"] is False
     )
+    assert done["finish_reason"] == "stop" and done["truncated"] is False
     answer = "".join(d["text"] for e, d in events if e == "token")
     assert "[1]" in answer
 
