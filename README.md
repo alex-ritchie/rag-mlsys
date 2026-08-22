@@ -1,19 +1,22 @@
 # MLSysBook RAG Learning Companion
 
-A retrieval-augmented learning companion for the two-volume textbook **[*Machine Learning Systems*](https://mlsysbook.ai/)
-by Vijay Janapa Reddi** (Harvard; [source](https://github.com/harvard-edge/cs249r_book), CC BY-NC-SA 4.0). Ask a
-question, get a grounded answer with inline citations to specific chapters and sections — and see every retrieval
-score and latency stage that produced it.
+A RAG learning companion for the two-volume textbook **[*Machine Learning Systems*](https://mlsysbook.ai/) by Vijay Janapa Reddi** (Harvard; [source](https://github.com/harvard-edge/cs249r_book), CC BY-NC-SA 4.0). Ask a question, get a grounded answer with inline citations, see everything from retrieval scores to latency breakdowns.
 
-The meta-angle is deliberate: **an ML-systems engineering project about an ML-systems textbook.** The stack
-demonstrates the lifecycle the book teaches — ingestion, retrieval, serving, evaluation, monitoring, inference
-optimisation — with every claim backed by a measurement.
+I am building this project to help me study and practice the technical content of the ML Systems textbook. This tool serves to demonstrate several **fundamental MLE concepts** and the **ML System Lifecycle**:
+- Data Preparation & Ingestion
+- Grounded Retrieval & Enforced Abstention
+- Model Serving & Inference Optimization
+- Evaluation & Monitoring
+- Deployment & Cost Management
+
+This tool is designed to **run locally** on consumer-grade hardware (e.g., my RTX 3090 Ti), but will also work with any OpenAI-compatible LLM server [docs/RUN_IT_YOURSELF.md](docs/RUN_IT_YOURSELF.md).[docs/RUN_IT_YOURSELF.md](docs/RUN_IT_YOURSELF.md)
 
 > **Attribution.** Book content © Vijay Janapa Reddi, licensed [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 > This project's code is MIT. No book text is committed anywhere in this repository — you build your own index
 > (see [LICENSING.md](LICENSING.md)).
 
-## What it is
+## What it isand see every retrieval
+score and latency stage that produced it.
 
 ```
                                   ┌─────────────────────────────────────┐
@@ -93,8 +96,10 @@ No GPU? `LLM_MODEL=fake make gateway` exercises the entire pipeline with a stand
 
 The public demo (Cloudflare Pages → same gateway code with `PROFILE=demo` → Supabase pgvector → **Claude Haiku** for
 generation) is an accessibility layer so you can try the retrieval and citation contract without a GPU. It is rate-limited
-(10 questions/day/IP) with a hard daily budget stop. The k3s/vLLM local stack above is the actual project; the
-`docker compose up` path and the demo video are the way to see it.
+(10 questions/day/IP) with a hard daily budget stop. Planned location: `https://rag-mlsys-demo.pages.dev` (backend
+`https://rag-mlsys-demo-api.fly.dev`) — deliberately not a *mlsysbook* domain, to avoid implying affiliation with the
+book's site. The k3s/vLLM local stack above is the actual project; the `docker compose up` path and the demo video are
+the way to see it.
 
 ## Repository map
 

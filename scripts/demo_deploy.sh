@@ -3,8 +3,8 @@
 # Prereqs: `flyctl` and `wrangler` logged in; secrets exported: ANTHROPIC_API_KEY, SUPABASE_DB_URL.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-APP=${FLY_APP:-mlsysbook-rag-demo}
-PAGES=${CF_PAGES_PROJECT:-mlsysbook-rag}
+APP=${FLY_APP:-rag-mlsys-demo-api}
+PAGES=${CF_PAGES_PROJECT:-rag-mlsys-demo}
 
 echo "== backend ($APP)"
 flyctl apps create "$APP" --yes 2>/dev/null || true

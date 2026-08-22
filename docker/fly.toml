@@ -1,5 +1,5 @@
 # Fly.io config for the demo backend (PROFILE=demo). Smallest VM that runs a ~2 GB-RAM Python process.
-app = "mlsysbook-rag-demo"
+app = "rag-mlsys-demo-api"
 primary_region = "iad"
 
 [build]
@@ -14,7 +14,7 @@ primary_region = "iad"
   DEMO_DAILY_BUDGET_USD = "2.00"
   EMBEDDER_ONNX_DIR = "/data/onnx/bge-m3-int8"
   RERANKER_ONNX_DIR = "/data/onnx/bge-reranker-v2-m3-int8"
-  CORS_ORIGINS = "https://mlsysbook-rag.pages.dev"
+  CORS_ORIGINS = "https://rag-mlsys-demo.pages.dev"
 
 [http_service]
   internal_port = 8000
