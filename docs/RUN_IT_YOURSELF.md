@@ -69,10 +69,10 @@ make retrieval-smoke                   # 10 spot-check queries with scores per s
 
 **vLLM (primary):**
 ```bash
-uv pip install "vllm>=0.17" --extra-index-url https://download.pytorch.org/whl/cu128   # or use the vllm/vllm-openai image
-make vllm                              # serves config/serving/vllm-qwen38-27b.yaml on :8003
+make setup-vllm                        # vLLM 0.27.1 (+cu129 wheel) + pinned torch into data/vllm-venv (~3 GB)
+make vllm                              # serves config/serving/vllm-qwen38-27b.yaml on :8003 (first run downloads 19.5 GB)
 ```
-Model download is ~17 GB. If CUDA-graph capture OOMs, restart with
+`make up` does this automatically when `LLM_MODEL` is not `fake`. If CUDA-graph capture OOMs, restart with
 `uv run python scripts/serve_vllm.py config/serving/vllm-qwen38-27b.yaml --set enforce-eager=true`.
 
 **No GPU?** `LLM_MODEL=fake make gateway` runs the whole pipeline with a deterministic stand-in

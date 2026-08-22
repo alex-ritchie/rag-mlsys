@@ -11,7 +11,8 @@ args:
   language-model-only: true          # skip the vision tower (flag name per Qwen3.6 recipes; verify at M3)
   max-num-seqs: 32
   dtype: auto
-  quantization: compressed-tensors   # W4A16 -> Marlin kernel on sm_86
+  trust-remote-code: true
+  # quantization is auto-detected from config.json (compressed-tensors pack-quantized -> Marlin int4 on sm_86)
   # enforce-eager: true              # escape hatch if CUDA-graph capture OOMs; record which mode ran
   # speculative-config: '{"method":"mtp","num_speculative_tokens":2}'   # M8 lever
 env:

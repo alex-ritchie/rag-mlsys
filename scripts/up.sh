@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # One-command local stack: DB + embedder + reranker + gateway + frontend, then open the browser.
 #
-#   make up                       # defaults: GPU services if nvidia-smi works, LLM_MODEL=fake
-#   LLM_MODEL=fake make up
-#   PROFILE=demo ANTHROPIC_API_KEY=sk-... make up      # real answers via Claude Haiku
-#   LLM_BASE_URL=http://localhost:8003/v1 LLM_MODEL=qwen38-27b-w4a16 make up   # with vLLM already running
+#   make up                       # defaults: GPU services, Qwen3.8-27B W4A16 via vLLM on :8003 (started if not running)
+#   LLM_MODEL=fake make up        # no LLM: real retrieval + citations, canned answer text
+#   PROFILE=demo ANTHROPIC_API_KEY=sk-... make up      # real answers via Claude Haiku (no local LLM)
+#   VLLM_CONFIG=config/serving/vllm-qwen35-9b.yaml LLM_MODEL=qwen35-9b-w4a16 make up   # another slate model
 #   EMBEDDER_MODE=cpu RERANKER_MODE=cpu make up         # keep the GPU free
 #   NO_BROWSER=1 make up
 #
@@ -23,7 +23,9 @@ if nvidia-smi >/dev/null 2>&1; then GPU_DEFAULT=gpu; else GPU_DEFAULT=cpu; fi
 export EMBEDDER_MODE="${EMBEDDER_MODE:-$GPU_DEFAULT}"
 export RERANKER_MODE="${RERANKER_MODE:-$GPU_DEFAULT}"
 export PROFILE="${PROFILE:-local}"
-export LLM_MODEL="${LLM_MODEL:-fake}"
+export LLM_MODEL="${LLM_MODEL:-qwen38-27b-w4a16}"
+export LLM_BASE_URL="${LLM_BASE_URL:-http://localhost:8003/v1}"
+VLLM_CONFIG="${VLLM_CONFIG:-config/serving/vllm-qwen38-27b.yaml}"
 export EMBEDDER_URL="${EMBEDDER_URL:-http://localhost:8001}"
 export RERANKER_URL="${RERANKER_URL:-http://localhost:8002}"
 if [[ "$PROFILE" == "demo" ]]; then
@@ -97,6 +99,22 @@ start embedder 8001 uv run uvicorn mlsys_embedder.app:app --port 8001; EMB_PID=$
 start reranker 8002 uv run uvicorn mlsys_reranker.app:app --port 8002; RR_PID=${PIDS[-1]}
 wait_for embedder http://localhost:8001/health "$EMB_PID" 300; echo "   embedder ready at $(since)"
 wait_for reranker http://localhost:8002/health "$RR_PID" 300;  echo "   reranker ready at $(since)"
+# ---- LLM ----------------------------------------------------------------------
+if [[ "$PROFILE" == "local" && "$LLM_MODEL" != "fake" ]]; then
+  if curl -sf "${LLM_BASE_URL%/v1}/health" >/dev/null 2>&1; then
+    echo "== llm already serving at $LLM_BASE_URL"
+  elif [[ "$LLM_BASE_URL" == http://localhost:8003/v1 ]]; then
+    if [[ ! -x data/vllm-venv/bin/vllm ]]; then
+      echo "!! vLLM is not installed (data/vllm-venv). See docs/RUN_IT_YOURSELF.md §5, or use LLM_MODEL=fake / PROFILE=demo."; exit 1
+    fi
+    echo "== vllm ($VLLM_CONFIG, :8003, log: data/logs/vllm.log) — model load takes a few minutes"
+    uv run python scripts/serve_vllm.py "$VLLM_CONFIG" >"$LOGS/vllm.log" 2>&1 &
+    PIDS+=($!)
+    wait_for vllm http://localhost:8003/health "${PIDS[-1]}" 1200; echo "   vllm ready at $(since)"
+  else
+    echo "!! no LLM at $LLM_BASE_URL"; exit 1
+  fi
+fi
 start gateway 8000 uv run uvicorn mlsys_gateway.app:app --port 8000
 wait_for gateway http://localhost:8000/api/health "${PIDS[-1]}" 60; echo "   gateway ready at $(since)"
 ( cd frontend && [[ -d node_modules ]] || pnpm install --silent )
@@ -109,6 +127,7 @@ echo "   app:      http://localhost:5173"
 echo "   gateway:  http://localhost:8000/api/health   (profile=$PROFILE, model=$LLM_MODEL)"
 echo "   services: embedder=$EMBEDDER_MODE reranker=$RERANKER_MODE"
 [[ "$LLM_MODEL" == "fake" && "$PROFILE" == "local" ]] && echo "   note: LLM_MODEL=fake — real retrieval + citations, canned answer text (see README)"
+[[ "$PROFILE" == "local" && "$LLM_MODEL" != "fake" ]] && echo "   llm:      $LLM_BASE_URL ($LLM_MODEL)"
 if [[ -z "${NO_BROWSER:-}" ]]; then
   (xdg-open http://localhost:5173 >/dev/null 2>&1 || open http://localhost:5173 >/dev/null 2>&1 || true) &
 fi

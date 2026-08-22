@@ -16,8 +16,13 @@ import os
 import shlex
 import subprocess
 import sys
+from pathlib import Path
 
 import yaml
+
+ROOT = Path(__file__).resolve().parents[1]
+# vLLM lives in its own venv (data/vllm-venv) because it pins torch exactly; see docs/RUN_IT_YOURSELF.md §5.
+VLLM_BIN = ROOT / "data" / "vllm-venv" / "bin" / "vllm"
 
 
 def build_cmd(cfg: dict) -> list[str]:
@@ -91,6 +96,7 @@ def main() -> int:
     if a.dry_run:
         return 0
     env = {**os.environ, **{k: str(v) for k, v in cfg.get("env", {}).items()}}
+    env.setdefault("HF_HOME", str(ROOT / "data" / "hf-cache"))
     return subprocess.call(cmd, env=env)
 
 

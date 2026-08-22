@@ -81,12 +81,12 @@ histogram and a per-query log row.
 make setup && make setup-models             # uv workspace + frontend deps (+ torch cu128, models)
 make db-up && export DATABASE_URL='...'     # unprivileged Postgres+pgvector under data/pg
 make ingest && make index                   # fetch book @ pinned SHA → 2,815 chunks → bge-m3 HNSW
-make up                                     # embedder + reranker + gateway + frontend → opens http://localhost:5173
+make up                                     # vLLM (Qwen3.8-27B) + embedder + reranker + gateway + frontend → http://localhost:5173
 ```
 
-`make up` defaults to `LLM_MODEL=fake` (real retrieval and citations, a stand-in generator). For real answers:
-`PROFILE=demo ANTHROPIC_API_KEY=... make up` (Claude Haiku) or start vLLM (`make vllm`) and run
-`LLM_BASE_URL=http://localhost:8003/v1 LLM_MODEL=qwen38-27b-w4a16 make up`. Ctrl-C stops everything.
+`make up` serves Qwen3.8-27B W4A16 on the GPU by default (vLLM is installed into `data/vllm-venv`; see the runbook §5).
+Without a GPU: `LLM_MODEL=fake make up` (real retrieval and citations, a stand-in generator) or
+`PROFILE=demo ANTHROPIC_API_KEY=... make up` (Claude Haiku). Ctrl-C stops everything.
 
 ```bash
 curl -N localhost:8000/api/ask -H 'content-type: application/json' \
