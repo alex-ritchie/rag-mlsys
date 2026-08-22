@@ -72,10 +72,12 @@ def _score_with_oom_recovery(query: str, docs: list[str]) -> np.ndarray:
                 if len(docs) > 1
                 else _backend.score(query, docs)
             )
-        except Exception as e2:
-            if "out of memory" in str(e2).lower():
-                raise HTTPException(503, "reranker out of GPU memory; retry later") from e2
-            raise
+        except (
+            Exception
+        ) as e2:  # any failure after an OOM is overload: shed load with 503, never a 500
+            raise HTTPException(
+                503, f"reranker overloaded after CUDA OOM ({type(e2).__name__}); retry later"
+            ) from e2
 
 
 @app.get("/health")

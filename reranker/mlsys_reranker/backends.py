@@ -32,7 +32,9 @@ class CrossEncoderBackend:
     def score(self, query: str, docs: list[str]) -> np.ndarray:
         s = self._m.predict(
             [(query, d) for d in docs],
-            batch_size=16,
+            batch_size=int(
+                os.environ.get("RERANKER_BATCH", "8")
+            ),  # bounds the activation transient beside vLLM
             show_progress_bar=False,
             convert_to_numpy=True,
         )

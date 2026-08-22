@@ -53,6 +53,8 @@ cheapest first:
 
 | 8 | **16K, util 0.90, `--max-num-seqs 24`, `--max-num-batched-tokens 2048`** + GPU reranker@512 (M8 variant B) | **PASS — adopted as the 27B default** | 0 OOMs, peak 23.13 GB, gateway c1–c16 error-free. KV 1.74 GiB (21,845 tokens): direct 352 tok/s sustained from c8; gateway TTFT 2.2 s @c1, **3.1 s @c4**, 20 s @c8 (queueing). Bounding the prefill chunk is what keeps vLLM inside its reserve next to the reranker; the cost is KV (the profiler reserves differently) and therefore concurrency beyond ~4. |
 
+| 9 | **8K, util 0.90, seqs 24, prefill 2048** + GPU reranker@512 (M8 variant C) | mixed — **not adopted** | The best KV at 0.90 so far: **3.82 GiB (38,068 tokens, 4.65× at 8K)**; LLM-only back to 593 tok/s @c16; rag-e2e TTFT 2.2 s @c1, 2.6 s @c4. But the reranker OOMed 65× at c8/c16 (vLLM alive, 0 failed answers — the gateway fell back to the fused order), so those rows are no-rerank numbers. Slack, not context, is the binding constraint: variant D (util 0.88 at 8K) is the next test. |
+
 Environment: vLLM 0.27.1 (+cu129 wheel), torch 2.13.0+cu129, transformers 5.15.1, driver 575.57 (CUDA 12.9),
 model `dbirks/Qwen3.8-27B-W4A16-AutoRound` (compressed-tensors pack-quantized, group 128, symmetric int4),
 architecture `Qwen3_5ForConditionalGeneration` (64 layers: full + linear attention), attention block size auto-set to
