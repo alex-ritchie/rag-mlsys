@@ -9,7 +9,9 @@ I am building this project to help me study and practice the technical content o
 - Evaluation & Monitoring
 - Deployment & Cost Management
 
-This tool is designed to **run locally** on consumer-grade hardware (e.g., my RTX 3090 Ti), but will also work with any OpenAI-compatible LLM server [docs/RUN_IT_YOURSELF.md](docs/RUN_IT_YOURSELF.md).[docs/RUN_IT_YOURSELF.md](docs/RUN_IT_YOURSELF.md)
+This tool is designed to **run locally** on consumer-grade hardware (e.g., my RTX 3090 Ti), but will also work with any OpenAI-compatible LLM server [docs/RUN_IT_YOURSELF.md](docs/RUN_IT_YOURSELF.md).
+
+
 
 > **Attribution.** Book content © Vijay Janapa Reddi, licensed [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 > This project's code is MIT. No book text is committed anywhere in this repository — you build your own index
@@ -96,10 +98,7 @@ No GPU? `LLM_MODEL=fake make gateway` exercises the entire pipeline with a stand
 
 The public demo (Cloudflare Pages → same gateway code with `PROFILE=demo` → Supabase pgvector → **Claude Haiku** for
 generation) is an accessibility layer so you can try the retrieval and citation contract without a GPU. It is rate-limited
-(10 questions/day/IP) with a hard daily budget stop. Planned location: `https://rag-mlsys-demo.pages.dev` (backend
-`https://rag-mlsys-demo-api.fly.dev`) — deliberately not a *mlsysbook* domain, to avoid implying affiliation with the
-book's site. The k3s/vLLM local stack above is the actual project; the `docker compose up` path and the demo video are
-the way to see it.
+(10 questions/day/IP) with a hard daily budget stop. Planned location: https://rag-mlsys-demo.pages.dev (backend https://rag-mlsys-demo-api.fly.dev) — deliberately not a mlsysbook domain, to avoid implying affiliation with the book's site. The k3s/vLLM local stack above is the actual project; the `docker compose up` path and the demo video are the way to see it.
 
 ## Repository map
 
