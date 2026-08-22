@@ -1,0 +1,267 @@
+{
+  "tag": "qwen35-9b-w8a8-8k",
+  "serving_config": "config/serving/vllm-qwen35-9b-w8a8-8k.yaml",
+  "model": "qwen35-9b-w8a8",
+  "serving_args": {
+    "max-model-len": 8192,
+    "gpu-memory-utilization": 0.8,
+    "enable-prefix-caching": true,
+    "reasoning-parser": "qwen3",
+    "language-model-only": true,
+    "max-num-seqs": 32,
+    "dtype": "auto",
+    "trust-remote-code": true
+  },
+  "load_seconds": 40,
+  "weights": "Model loading took 11.87 GiB",
+  "kv": "Available KV cache memory: 6.41 GiB",
+  "kv_tokens": "GPU KV cache size: 147,828 tokens",
+  "max_concurrency_at_full_context": "Maximum concurrency for 8,192 tokens per request: 18.05x",
+  "vram_mib": {
+    "vllm_only": 19429,
+    "with_embedder_reranker": 22268,
+    "peak_gateway_load": 24110
+  },
+  "placement": {
+    "embedder": "gpu",
+    "reranker": "gpu",
+    "reranker_max_length": 1024
+  },
+  "oom_or_cuda_errors": 33,
+  "gateway_500s": 0,
+  "vllm_alive_after": false,
+  "llm_only": [
+    {
+      "concurrency": 1,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 340.74,
+      "requests_per_s": 0.141,
+      "output_tokens_per_s": 71.3,
+      "ttft_ms": {
+        "p50": 22.6,
+        "p90": 23.8,
+        "p99": 33.1
+      },
+      "total_ms": {
+        "p50": 7185.1,
+        "p90": 7186.7,
+        "p99": 7195.9
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 4,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 90.84,
+      "requests_per_s": 0.528,
+      "output_tokens_per_s": 265.4,
+      "ttft_ms": {
+        "p50": 51.6,
+        "p90": 59.3,
+        "p99": 71.5
+      },
+      "total_ms": {
+        "p50": 7574.0,
+        "p90": 7578.2,
+        "p99": 7580.8
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 8,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 45.92,
+      "requests_per_s": 1.045,
+      "output_tokens_per_s": 535.2,
+      "ttft_ms": {
+        "p50": 53.0,
+        "p90": 57.2,
+        "p99": 60.2
+      },
+      "total_ms": {
+        "p50": 7652.8,
+        "p90": 7657.9,
+        "p99": 7659.0
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 16,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 25.45,
+      "requests_per_s": 1.886,
+      "output_tokens_per_s": 965.6,
+      "ttft_ms": {
+        "p50": 99.8,
+        "p90": 111.4,
+        "p99": 112.2
+      },
+      "total_ms": {
+        "p50": 8483.4,
+        "p90": 8493.6,
+        "p99": 8495.1
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 32,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 18.96,
+      "requests_per_s": 2.531,
+      "output_tokens_per_s": 1295.9,
+      "ttft_ms": {
+        "p50": 162.5,
+        "p90": 163.5,
+        "p99": 164.4
+      },
+      "total_ms": {
+        "p50": 10494.6,
+        "p90": 10497.7,
+        "p99": 10498.9
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    }
+  ],
+  "rag_e2e": [
+    {
+      "concurrency": 1,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 120.02,
+      "requests_per_s": 0.267,
+      "output_tokens_per_s": 61.1,
+      "ttft_ms": {
+        "p50": 376.9,
+        "p90": 685.0,
+        "p99": 716.5
+      },
+      "total_ms": {
+        "p50": 3664.0,
+        "p90": 5063.1,
+        "p99": 6926.6
+      },
+      "stage_ms_p50": {
+        "embed_ms": 9.7,
+        "retrieve_ms": 3.1,
+        "rerank_ms": 270.8,
+        "ttft_ms": 376.2,
+        "generate_ms": 3359.1,
+        "total_ms": 3652.0
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 4,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 43.53,
+      "requests_per_s": 0.735,
+      "output_tokens_per_s": 172.2,
+      "ttft_ms": {
+        "p50": 646.0,
+        "p90": 1121.3,
+        "p99": 1333.2
+      },
+      "total_ms": {
+        "p50": 5038.9,
+        "p90": 7073.2,
+        "p99": 8823.2
+      },
+      "stage_ms_p50": {
+        "embed_ms": 16.1,
+        "retrieve_ms": 3.2,
+        "rerank_ms": 528.7,
+        "ttft_ms": 645.2,
+        "generate_ms": 4313.5,
+        "total_ms": 5026.8
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 8,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 29.39,
+      "requests_per_s": 1.089,
+      "output_tokens_per_s": 243.4,
+      "ttft_ms": {
+        "p50": 1132.0,
+        "p90": 2742.1,
+        "p99": 2742.7
+      },
+      "total_ms": {
+        "p50": 6347.9,
+        "p90": 8378.1,
+        "p99": 11015.6
+      },
+      "stage_ms_p50": {
+        "embed_ms": 17.7,
+        "retrieve_ms": 3.3,
+        "rerank_ms": 969.0,
+        "ttft_ms": 1130.8,
+        "generate_ms": 4937.3,
+        "total_ms": 6335.3
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 16,
+      "requests": 32,
+      "errors": 16,
+      "wall_s": 2.64,
+      "requests_per_s": 6.061,
+      "output_tokens_per_s": 3.4,
+      "ttft_ms": {
+        "p50": 0,
+        "p90": 1757.9,
+        "p99": 2197.7
+      },
+      "total_ms": {
+        "p50": 2474.8,
+        "p90": 2479.3,
+        "p99": 2481.6
+      },
+      "stage_ms_p50": {
+        "embed_ms": 142.8,
+        "retrieve_ms": 2.6,
+        "rerank_ms": 631.0,
+        "ttft_ms": 0.0,
+        "generate_ms": 1777.4,
+        "total_ms": 2447.4
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": [
+        "RuntimeError: LLM backend 500: {\"error\":{\"message\":\"EngineCore encountered an issue. See stack trace (above) for the root cause.\",\"type\":\"InternalServerError\",\"param\":null,\"code\":500}}",
+        "RuntimeError: LLM backend 500: {\"error\":{\"message\":\"EngineCore encountered an issue. See stack trace (above) for the root cause.\",\"type\":\"InternalServerError\",\"param\":null,\"code\":500}}",
+        "RuntimeError: LLM backend 500: {\"error\":{\"message\":\"EngineCore encountered an issue. See stack trace (above) for the root cause.\",\"type\":\"InternalServerError\",\"param\":null,\"code\":500}}",
+        "RuntimeError: LLM backend 500: {\"error\":{\"message\":\"EngineCore encountered an issue. See stack trace (above) for the root cause.\",\"type\":\"InternalServerError\",\"param\":null,\"code\":500}}",
+        "RuntimeError: LLM backend 500: {\"error\":{\"message\":\"EngineCore encountered an issue. See stack trace (above) for the root cause.\",\"type\":\"InternalServerError\",\"param\":null,\"code\":500}}"
+      ]
+    }
+  ],
+  "bench_files": [
+    "bench/results/20260822T194019Z-cell-qwen35-9b-w8a8-8k-llm-only.json",
+    "bench/results/20260822T194408Z-cell-qwen35-9b-w8a8-8k-rag-e2e.json"
+  ],
+  "vllm_version": {
+    "version": "0.27.1"
+  }
+}
