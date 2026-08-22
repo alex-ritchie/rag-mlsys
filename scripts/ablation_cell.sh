@@ -25,7 +25,8 @@ echo "== [$TAG] vLLM: $CFG"; T0=$(date +%s)
 uv run python scripts/serve_vllm.py "$CFG" >"$SP/vllm.log" 2>&1 & PIDS+=($!); VP=$!
 until curl -sf localhost:8003/health >/dev/null; do sleep 5; kill -0 $VP 2>/dev/null || { echo "!! vllm exited"; grep -E "ValueError|Error" "$SP/vllm.log" | tail -3; exit 1; }; done
 LOAD_S=$(( $(date +%s) - T0 )); V_LLM=$(vram)
-WEIGHTS=$(grep -oE "Model loading took [0-9.]+ GiB" "$SP/vllm.log" | head -1); KV=$(grep -oE "Available KV cache memory: [0-9.]+ GiB" "$SP/vllm.log" | head -1); KVTOK=$(grep -oE "GPU KV cache size: [0-9,]+ tokens" "$SP/vllm.log" | head -1); CONC=$(grep -oE "Maximum concurrency for [0-9,]+ tokens per request: [0-9.]+x" "$SP/vllm.log" | head -1)
+# vLLM-specific log lines (absent for llama.cpp): never let a zero-match grep trip errexit+pipefail
+WEIGHTS=$({ grep -oE "Model loading took [0-9.]+ GiB" "$SP/vllm.log" || true; } | head -1); KV=$({ grep -oE "Available KV cache memory: [0-9.]+ GiB" "$SP/vllm.log" || true; } | head -1); KVTOK=$({ grep -oE "GPU KV cache size: [0-9,]+ tokens" "$SP/vllm.log" || true; } | head -1); CONC=$({ grep -oE "Maximum concurrency for [0-9,]+ tokens per request: [0-9.]+x" "$SP/vllm.log" || true; } | head -1)
 echo "   up ${LOAD_S}s | $WEIGHTS | $KV | $KVTOK | $CONC | vram $V_LLM MiB"
 
 echo "== smoke"; curl -s localhost:8003/v1/chat/completions -H 'content-type: application/json' -d "{\"model\":\"$MODEL\",\"messages\":[{\"role\":\"user\",\"content\":\"In one sentence, what is a KV cache?\"}],\"max_tokens\":64,\"chat_template_kwargs\":{\"enable_thinking\":false}}" | python3 -c 'import sys,json; d=json.load(sys.stdin); print("   ", d["choices"][0]["message"]["content"][:160].replace("\n"," "), "|", d["usage"]["completion_tokens"], "tok")'
