@@ -24,6 +24,11 @@ export function LatencyFooter({ done }: { done: DoneEvent }) {
         {done.model} · {done.prompt_version}
       </span>
       {done.abstained && <span className="text-amber-400">abstained</span>}
+      {done.truncated && (
+        <span className="text-red-400" title="The answer hit MAX_OUTPUT_TOKENS and was cut off">
+          truncated
+        </span>
+      )}
       {done.demo_cost_usd !== undefined && <span>${done.demo_cost_usd.toFixed(4)}</span>}
     </div>
   )

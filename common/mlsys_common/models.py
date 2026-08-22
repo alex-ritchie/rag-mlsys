@@ -86,6 +86,10 @@ class DoneEvent(BaseModel):
     model: str
     prompt_version: str
     abstained: bool
+    finish_reason: str | None = (
+        None  # "length" => the answer hit MAX_OUTPUT_TOKENS and is truncated
+    )
+    truncated: bool = False
     query_log_id: int | None = None
 
 

@@ -108,6 +108,7 @@ async def ask(deps: Deps, req: AskRequest) -> AsyncIterator[PipelineEvent]:
     reranked: list[RetrievedChunk] = []
     answer_parts: list[str] = []
     usage = Usage()
+    finish_reason: str | None = None
     error: str | None = None
     M.INFLIGHT.inc()
     try:
@@ -129,6 +130,8 @@ async def ask(deps: Deps, req: AskRequest) -> AsyncIterator[PipelineEvent]:
                 yield PipelineEvent("token", ev.text)
             elif ev.kind == "usage" and ev.usage:
                 usage = ev.usage
+            elif ev.kind == "done":
+                finish_reason = ev.finish_reason
         lat.generate_ms = now_ms() - t3
         M.STAGE_SECONDS.labels("generate").observe(lat.generate_ms / 1000)
     except Exception as e:  # surface as an SSE error event, log the row, re-raise nothing
@@ -148,6 +151,8 @@ async def ask(deps: Deps, req: AskRequest) -> AsyncIterator[PipelineEvent]:
     abstained = is_abstention(answer)
     if abstained:
         M.ABSTENTIONS.inc()
+    if finish_reason == "length":
+        M.TRUNCATED.inc()
     M.REQUESTS.labels(s.profile, "ask", "error" if error else "ok").inc()
 
     log_id: int | None = None

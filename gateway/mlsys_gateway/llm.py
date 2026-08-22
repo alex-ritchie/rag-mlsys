@@ -22,6 +22,7 @@ class StreamEvent:
     kind: str  # token | usage | done
     text: str = ""
     usage: Usage | None = None
+    finish_reason: str | None = None  # stop | length | ... (set on the done event)
     raw: dict = field(default_factory=dict)
 
 
@@ -65,6 +66,7 @@ class OpenAICompatLLM:
         }
         if self.disable_thinking:
             body["chat_template_kwargs"] = {"enable_thinking": False}
+        finish_reason: str | None = None
         async with self._client.stream("POST", f"{self.base_url}/chat/completions", json=body) as r:
             if r.status_code >= 400:
                 detail = (await r.aread()).decode(errors="replace")[:500]
@@ -81,6 +83,8 @@ class OpenAICompatLLM:
                     tok = delta.get("content")
                     if tok:
                         yield StreamEvent("token", tok)
+                    if ch.get("finish_reason"):
+                        finish_reason = ch["finish_reason"]
                 if obj.get("usage"):
                     u = obj["usage"]
                     yield StreamEvent(
@@ -91,7 +95,7 @@ class OpenAICompatLLM:
                             total_tokens=u.get("total_tokens", 0),
                         ),
                     )
-        yield StreamEvent("done")
+        yield StreamEvent("done", finish_reason=finish_reason)
 
     async def models(self) -> list[str]:
         r = await self._client.get(f"{self.base_url}/models")

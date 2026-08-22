@@ -74,6 +74,7 @@ async def stream_chat(deps: Deps, req: ChatCompletionRequest) -> AsyncIterator[s
     model = req.model or deps.llm.model
     citations: list[dict] = []
     usage: dict | None = None
+    finish = "stop"
     yield (
         "data: "
         + json.dumps(_chunk(cid, model, created, {"role": "assistant", "content": ""}))
@@ -91,6 +92,7 @@ async def stream_chat(deps: Deps, req: ChatCompletionRequest) -> AsyncIterator[s
                 "completion_tokens": u["completion_tokens"],
                 "total_tokens": u["total_tokens"],
             }
+            finish = ev.data.get("finish_reason") or "stop"
         elif ev.event == "error":
             yield (
                 "data: "
@@ -103,7 +105,7 @@ async def stream_chat(deps: Deps, req: ChatCompletionRequest) -> AsyncIterator[s
     if tail:
         yield "data: " + json.dumps(_chunk(cid, model, created, {"content": tail})) + "\n\n"
     yield (
-        "data: " + json.dumps(_chunk(cid, model, created, {}, finish="stop", usage=usage)) + "\n\n"
+        "data: " + json.dumps(_chunk(cid, model, created, {}, finish=finish, usage=usage)) + "\n\n"
     )
     yield "data: [DONE]\n\n"
 

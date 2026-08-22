@@ -23,6 +23,9 @@ GATEWAY_OVERHEAD_SECONDS = Histogram(
 )
 TOKENS = Counter("rag_tokens_total", "Tokens", ["kind"])
 ABSTENTIONS = Counter("rag_abstentions_total", "Answers that abstained")
+TRUNCATED = Counter(
+    "rag_truncated_answers_total", "Answers cut off by MAX_OUTPUT_TOKENS (finish_reason=length)"
+)
 ERRORS = Counter("rag_errors_total", "Errors by stage", ["stage"])
 INFLIGHT = Gauge("rag_inflight_requests", "In-flight /api/ask requests")
 RERANK_TOP1 = Histogram(

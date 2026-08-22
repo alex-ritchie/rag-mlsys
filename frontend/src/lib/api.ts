@@ -22,6 +22,8 @@ export interface DoneEvent {
   model: string
   prompt_version: string
   abstained: boolean
+  finish_reason?: string | null
+  truncated?: boolean
   query_log_id: number | null
   demo_cost_usd?: number
 }
