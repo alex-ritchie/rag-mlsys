@@ -22,12 +22,13 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 # vLLM lives in its own venv (data/vllm-venv) because it pins torch exactly; see docs/RUN_IT_YOURSELF.md §5.
 VLLM_BIN = ROOT / "data" / "vllm-venv" / "bin" / "vllm"
+LLAMA_BIN = ROOT / "data" / "llama.cpp" / "build" / "bin" / "llama-server"  # built by scripts/setup_llamacpp.sh
 
 
 def build_cmd(cfg: dict) -> list[str]:
     if cfg.get("engine") == "llamacpp":
         cmd = [
-            "llama-server",
+            str(LLAMA_BIN) if LLAMA_BIN.exists() else "llama-server",
             "-m",
             cfg["model_file"],
             "--port",

@@ -27,6 +27,9 @@ setup-vllm: ## Install vLLM (cu129 wheel, pinned torch) into its own venv at dat
 setup-mlsysim: ## Install the book's mlsysim calc package into data/mlsysim-venv (materialises inline numbers at ingest)
 	./scripts/setup_mlsysim.sh
 
+setup-llamacpp: ## Build llama.cpp with CUDA (sm_86) into data/llama.cpp for the engine-ablation cell
+	./scripts/setup_llamacpp.sh
+
 ## ---- quality --------------------------------------------------------------
 lint: ## Ruff lint + format check, mypy, frontend lint
 	$(PY) ruff check .
@@ -154,4 +157,4 @@ demo-deploy: ## Deploy the demo backend (fly.io) + frontend (Cloudflare Pages)
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t/' | awk -F'\t' '{printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: up setup setup-models setup-vllm setup-mlsysim reingest lint fmt test test-integration guard ci db-up db-down db-migrate fetch ingest ingest-dry index retrieval-smoke embedder reranker gateway dev vllm golden-generate golden-verify eval eval-retrieval judge-validate bench bench-sweeps bench-report compose-up compose-down images k8s-apply k8s-delete hpa-demo demo-load-supabase demo-deploy help
+.PHONY: up setup setup-models setup-vllm setup-mlsysim setup-llamacpp reingest lint fmt test test-integration guard ci db-up db-down db-migrate fetch ingest ingest-dry index retrieval-smoke embedder reranker gateway dev vllm golden-generate golden-verify eval eval-retrieval judge-validate bench bench-sweeps bench-report compose-up compose-down images k8s-apply k8s-delete hpa-demo demo-load-supabase demo-deploy help
