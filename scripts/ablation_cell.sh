@@ -67,7 +67,7 @@ YAML
 PEAK=$V_ALL; ( while true; do v=$(vram); [[ $v -gt $(cat "$SP/peak" 2>/dev/null || echo 0) ]] && echo $v > "$SP/peak"; sleep 2; done ) & MON=$!; PIDS+=($MON)  # cleanup must kill the monitor too, or `wait` hangs forever
 uv run python -m mlsys_bench.run "$SP/bench-rag-e2e.yaml" | tee "$SP/bench-rag-e2e.log" | grep -E "^\s+rps|^-- "
 kill $MON 2>/dev/null || true; PEAK=$(cat "$SP/peak" 2>/dev/null || echo $V_ALL)
-ERR=$(grep -ciE "out of memory|CUDA error" "$SP/vllm.log" "$SP/reranker.log" "$SP/embedder.log" | awk -F: '{s+=$2} END {print s+0}')
+ERR=$( { grep -ciE "out of memory|CUDA error" "$SP/vllm.log" "$SP/reranker.log" "$SP/embedder.log" || true; } | awk -F: '{s+=$2} END {print s+0}')  # grep exits 1 on zero matches: with pipefail+errexit that killed the script exactly when the run was clean
 G500=$(grep -c "500 Internal" "$SP/gateway.log" || true)
 curl -sf localhost:8003/health >/dev/null && ALIVE=true || ALIVE=false
 
