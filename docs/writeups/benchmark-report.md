@@ -32,7 +32,9 @@ verified golden set. "Own best" means each model runs at the configuration its V
 | Qwen3.8-27B W4A16, 8K, util 0.88, seqs 24 | co-residency variant A | 16.6 GiB | 1.27 GiB (12.5K) | emb CPU, rerank GPU@512 | 51 / 275 / 275 @c8 (KV-bound) | 2.2 s / 26 s (queueing, **0 errors**, peak 23.2 GB) | _pending_ |
 | **Qwen3.8-27B W4A16, 16K, util 0.90, seqs 24, prefill chunk 2048** | co-residency variant B — **adopted default** | 16.6 GiB | 1.74 GiB (21.8K) | emb CPU, rerank GPU@512 | 51 / 352 / 352 @c8 (KV-bound) | 2.2 s / 20 s; **3.1 s @c4**; **0 errors**, peak 23.1 GB | _pending_ |
 | Qwen3.8-27B W4A16, 8K, util 0.90, seqs 24, prefill chunk 2048 | co-residency variant C | 16.6 GiB | **3.82 GiB (38.1K)** | emb CPU, rerank GPU@512 | 51 / 353 / 593 @c16 | 2.2 s / 2.5 s† (c8/c16 fell back to no-rerank after 65 reranker OOMs) | _pending_ |
-| Qwen3.5-9B W4A16 / vLLM, 32K, util 0.80 | size | 9.5 GiB | **6.6 GiB (195.7K)** | emb GPU, rerank GPU@1024 | **95 / 697 / 1,508 @c32** | **0.41 s / 0.97 s** | _pending_ |
+| Qwen3.8-27B W4A16, 8K, util 0.88, seqs 24, prefill chunk 2048 | co-residency variant D | 16.6 GiB | 3.35 GiB (33.7K) | emb CPU, rerank GPU@512 | 51 / 353 / 593 @c16 | 2.2 s / 4.8 s; 3.9 s @c4; 0 fallbacks, 30 reranker OOMs recovered in-service | _pending_ |
+| Qwen3.5-9B W4A16 / vLLM, 32K, util 0.80 | size | 9.5 GiB | 6.6 GiB (195.7K) | emb GPU, rerank GPU@1024 | **95 / 697 / 1,508 @c32** | 0.41 s / 0.97 s (13 reranker OOMs recovered) | _pending_ |
+| **Qwen3.5-9B W4A16 / vLLM, 8K, util 0.80** | size — **own-best, adopted 9B config** | 9.5 GiB | 6.6 GiB (153.4K, 18.7× at 8K) | emb GPU, rerank GPU@1024 | **95 / 697 / 1,503 @c32** | **0.42 s / 1.10 s — zero OOMs, zero fallbacks, peak 23.2 GB** | _pending_ |
 | Qwen3.5-9B BF16 / vLLM, 32K, util 0.90 | quantization (none vs 4-bit) | 16.8 GiB | 2.2 GiB (64.1K) | emb CPU, rerank GPU@1024 | 51 / 386 / 917 @c32 | 1.0 s / 1.9 s | _pending_ |
 | Qwen3.5-9B W8A8 / vLLM, 32K, util 0.85 | quantization (int8 W+A vs 4-bit W) | 11.9 GiB | 5.9 GiB (174.3K) | emb GPU, rerank GPU@1024 | 71 / 533 / 1,296 @c32 | 0.36 s / 0.45 s† | _pending_ |
 | Qwen3.6-35B-A3B W4A16 / vLLM | dense → MoE | | | | _pending_ | | |

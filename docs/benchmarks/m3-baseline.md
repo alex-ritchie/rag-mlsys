@@ -55,6 +55,8 @@ cheapest first:
 
 | 9 | **8K, util 0.90, seqs 24, prefill 2048** + GPU reranker@512 (M8 variant C) | mixed — **not adopted** | The best KV at 0.90 so far: **3.82 GiB (38,068 tokens, 4.65× at 8K)**; LLM-only back to 593 tok/s @c16; rag-e2e TTFT 2.2 s @c1, 2.6 s @c4. But the reranker OOMed 65× at c8/c16 (vLLM alive, 0 failed answers — the gateway fell back to the fused order), so those rows are no-rerank numbers. Slack, not context, is the binding constraint: variant D (util 0.88 at 8K) is the next test. |
 
+| 10 | **8K, util 0.88, seqs 24, prefill 2048** + GPU reranker@512 (M8 variant D) | stable for users, **not adopted** | KV **3.35 GiB (33,731 tokens, 4.12× at 8K)** — twice variant B's pool; LLM-only identical (593 tok/s @c16). rag-e2e: 0 failed answers, 0 fallbacks, but the reranker hit OOM 30× at c8/c16 and recovered in-service (halved batches), and TTFT was no better than B (2.2 s @c1, 3.9 s @c4, 4.8 s @c8 vs B's 2.2 / 3.1 / 20 s). Peak 24.1 GB. Conclusion: beside a co-resident reranker the 27B is bounded by *slack*, not KV — more KV does not convert into lower rag-e2e latency until the reranker stops competing for the last gigabyte. |
+
 Environment: vLLM 0.27.1 (+cu129 wheel), torch 2.13.0+cu129, transformers 5.15.1, driver 575.57 (CUDA 12.9),
 model `dbirks/Qwen3.8-27B-W4A16-AutoRound` (compressed-tensors pack-quantized, group 128, symmetric int4),
 architecture `Qwen3_5ForConditionalGeneration` (64 layers: full + linear attention), attention block size auto-set to
