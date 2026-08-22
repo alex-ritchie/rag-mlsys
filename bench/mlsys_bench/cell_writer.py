@@ -13,7 +13,6 @@ import sys
 from pathlib import Path
 
 import yaml
-
 from mlsys_common.settings import REPO_ROOT
 
 
@@ -29,8 +28,8 @@ def write_cell(
     vllm_log = (sp / "vllm.log").read_text(errors="replace") if (sp / "vllm.log").exists() else ""
     direct = sorted(glob.glob(str(REPO_ROOT / "bench" / "results" / f"*cell-{tag}-direct*.json")))
     gateway = sorted(glob.glob(str(REPO_ROOT / "bench" / "results" / f"*cell-{tag}-gateway*.json")))
-    d = json.load(open(direct[-1])) if direct else {"runs": []}
-    g = json.load(open(gateway[-1])) if gateway else {"runs": []}
+    d = json.loads(Path(direct[-1]).read_text()) if direct else {"runs": []}
+    g = json.loads(Path(gateway[-1]).read_text()) if gateway else {"runs": []}
     errs = 0
     for name in ("vllm.log", "reranker.log", "embedder.log"):
         f = sp / name
@@ -43,7 +42,7 @@ def write_cell(
     )
     peak = int((sp / "peak").read_text().strip() or 0) if (sp / "peak").exists() else None
     vram = json.loads((sp / "vram.json").read_text()) if (sp / "vram.json").exists() else {}
-    cfg = yaml.safe_load(open(REPO_ROOT / serving_cfg))
+    cfg = yaml.safe_load((REPO_ROOT / serving_cfg).read_text())
     doc = {
         "tag": tag,
         "serving_config": serving_cfg,

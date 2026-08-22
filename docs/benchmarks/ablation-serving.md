@@ -11,6 +11,7 @@ through embed → hybrid retrieval → rerank → generation with the cell's pla
 |---|---|---|---|---|---|---|---|---|---|---|
 | `qwen35-9b-bf16` | 16.8 GiB | 2.18 GiB (64,111 tokens) | 1.96x | cpu / gpu@1024 | 20159 / 21669 / 24083 MiB | 386.3 | 29.8 | 1015.4 | 11189.4 | 21 oom, 0 5xx |
 | `qwen35-9b-w4a16` | 9.47 GiB | 6.64 GiB (195,658 tokens) | 5.97x | gpu / gpu@1024 | 17709 / 20510 / 24074 MiB | 696.5 | 19.7 | 411.6 | 5448.3 | 13 oom, 0 5xx |
+| `qwen38-27b-w4a16-16k-bounded` | 16.59 GiB | 1.74 GiB (21,845 tokens) | 1.33x | cpu / gpu@512 | ? / None / 23131 MiB | 352.3 | 37.5 | 2220.4 | 29330.2 | 0 oom, 0 5xx |
 | `qwen38-27b-w4a16-8k` | 16.59 GiB | 1.27 GiB (12,528 tokens) | 1.53x | cpu / gpu@512 | ? / 20469 / 23171 MiB | 274.8 | 37.5 | 2230.5 | 35993.8 | 0 oom, 0 5xx |
 | `qwen38-27b-w4a16` | 16.59 GiB | 3.81 GiB (47,938 tokens) | 2.93x | cpu / gpu@512 | 21773 / 23165 / 24095 MiB | 352.4 | 40.8 | 2315.8 | 0.0 | 2 oom, 0 5xx |
 
@@ -63,6 +64,31 @@ Per-stage p50 at c1: embed 69, retrieve 3, rerank 262, ttft 1015, generate 5228,
 | 16 | 1.04 | 219.5 | 4844.5 | 10855.3 | 13885.8 | 27342.7 | 0 |
 
 Per-stage p50 at c1: embed 9, retrieve 3, rerank 263, ttft 411, generate 2524, total 2788
+
+## `qwen38-27b-w4a16-16k-bounded` — `config/serving/vllm-qwen38-27b-16k-bounded.yaml`
+
+- model `qwen38-27b-w4a16` · vLLM {'version': '0.27.1'} · load None s · vLLM alive after run: None
+
+### Engine-direct
+
+| conc | req/s | out tok/s | TTFT p50 | TTFT p99 | total p50 | total p99 | errors |
+|---|---|---|---|---|---|---|---|
+| 1 | 0.1 | 51.1 | 37.5 | 38.5 | 10015.5 | 10016.9 | 0 |
+| 4 | 0.353 | 180.9 | 109.9 | 114.8 | 11318.3 | 11324.1 | 0 |
+| 8 | 0.688 | 352.3 | 173.9 | 178.9 | 11621.7 | 11635.4 | 0 |
+| 16 | 0.688 | 352.1 | 11796.2 | 11808.6 | 23260.1 | 23272.9 | 0 |
+| 32 | 0.687 | 351.8 | 35000.1 | 35115.1 | 46483.5 | 46637.8 | 0 |
+
+### Gateway end-to-end
+
+| conc | req/s | out tok/s | TTFT p50 | TTFT p99 | total p50 | total p99 | errors |
+|---|---|---|---|---|---|---|---|
+| 1 | 0.142 | 35.0 | 2220.4 | 2609.4 | 7127.9 | 12365.7 | 0 |
+| 4 | 0.255 | 60.0 | 3132.1 | 12409.3 | 13950.8 | 30899.4 | 0 |
+| 8 | 0.254 | 61.3 | 20003.6 | 28231.5 | 29330.2 | 39105.4 | 0 |
+| 16 | 0.254 | 62.5 | 44287.6 | 62298.3 | 54625.1 | 84222.6 | 0 |
+
+Per-stage p50 at c1: embed 71, retrieve 3, rerank 170, ttft 2220, generate 6881, total 7116
 
 ## `qwen38-27b-w4a16-8k` — `config/serving/vllm-qwen38-27b-8k.yaml`
 

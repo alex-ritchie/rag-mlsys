@@ -71,19 +71,5 @@ ERR=$(grep -ciE "out of memory|CUDA error" "$SP/vllm.log" "$SP/reranker.log" "$S
 G500=$(grep -c "500 Internal" "$SP/gateway.log" || true)
 curl -sf localhost:8003/health >/dev/null && ALIVE=true || ALIVE=false
 
-python3 - "$TAG" "$CFG" "$DIRECT" "$GATEWAY" <<PY
-import json, sys
-tag, cfg, direct, gateway = sys.argv[1:]
-d = json.load(open(direct)); g = json.load(open(gateway))
-doc = {
-  "tag": tag, "serving_config": cfg, "model": "$MODEL", "load_seconds": $LOAD_S,
-  "weights": "$WEIGHTS", "kv": "$KV", "kv_tokens": "$KVTOK", "max_concurrency_at_full_context": "$CONC",
-  "vram_mib": {"vllm_only": $V_LLM, "with_embedder_reranker": $V_ALL, "peak_gateway_load": $PEAK},
-  "placement": {"embedder": "$EMBEDDER_MODE", "reranker": "$RERANKER_MODE", "reranker_max_length": $RERANKER_MAX_LENGTH},
-  "oom_or_cuda_errors": $ERR, "gateway_500s": int("$G500" or 0), "vllm_alive_after": "$ALIVE" == "true",
-  "engine_direct": d["runs"], "gateway_e2e": g["runs"],
-  "bench_files": [direct, gateway], "vllm_version": d.get("server", {}).get("version"),
-}
-json.dump(doc, open(f"docs/benchmarks/cell-{tag}.json", "w"), indent=2)
-print("wrote docs/benchmarks/cell-%s.json  (errors=%s, 500s=%s, alive=%s, peak %s MiB)" % (tag, $ERR, "$G500", "$ALIVE", $PEAK))
-PY
+printf '{"load_seconds": %s, "vllm_only": %s, "with_services": %s, "alive": %s, "placement": {"embedder": "%s", "reranker": "%s", "reranker_max_length": %s}}' "$LOAD_S" "$V_LLM" "$V_ALL" "$ALIVE" "$EMBEDDER_MODE" "$RERANKER_MODE" "$RERANKER_MAX_LENGTH" > "$SP/vram.json"
+uv run python -m mlsys_bench.cell_writer "$TAG" "$CFG"
