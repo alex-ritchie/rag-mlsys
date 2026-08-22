@@ -17,6 +17,7 @@ generation, with the cell's embedder/reranker placement.
 | `qwen35-9b-w8a8-8k` | 11.87 GiB | 6.41 GiB (147,828 tokens) | 18.05x | gpu / gpu@1024 | 19429 / 22268 / 24110 MiB | 535.3 | 22.5 | 375.8 | 6572.4 | 0 oom, 0 5xx |
 | `qwen35-9b-w8a8` | 11.87 GiB | 5.92 GiB (174,287 tokens) | 5.32x | gpu / gpu@1024 | 18931 / 21732 / 24112 MiB | 533.4 | 21.8 | 363.2 | 4414.8 | 64 oom, 0 5xx |
 | `qwen36-35b-a3b-int4` | 18.87 GiB | 1.27 GiB (36,278 tokens) | 4.43x | cpu / gpu@512 | ? / None / 23501 MiB | 787.3 | 22.5 | 626.7 | 5432.0 | 0 oom, 0 5xx |
+| `qwen38-27b-gguf-ud-q4km-mtp3` |  |  () |  | cpu / gpu@512 | 18415 / 19797 / 19993 MiB | 69.4 | 302.0 | 2763.8 | 40311.3 | 0 oom, 0 5xx |
 | `qwen38-27b-w4a16-16k-bounded` | 16.59 GiB | 1.74 GiB (21,845 tokens) | 1.33x | cpu / gpu@512 | ? / None / 23131 MiB | 352.3 | 37.5 | 2220.4 | 29330.2 | 0 oom, 0 5xx |
 | `qwen38-27b-w4a16-8k-bounded-088` | 16.59 GiB | 3.35 GiB (33,731 tokens) | 4.12x | cpu / gpu@512 | 21235 / 22647 / 24095 MiB | 352.6 | 37.7 | 2220.3 | 21062.1 | 30 oom, 0 5xx |
 | `qwen38-27b-w4a16-8k-bounded` | 16.59 GiB | 3.82 GiB (38,068 tokens) | 4.65x | cpu / gpu@512 | 21695 / 23127 / 24107 MiB | 352.6 | 37.5 | 2225.0 | 21659.5 | 65 oom, 0 5xx |
@@ -197,6 +198,31 @@ Per-stage p50 at c1: embed 9, retrieve 3, rerank 261, ttft 362, generate 3294, t
 | 16 | 1.056 | 238.4 | 7131.7 | 14322.7 | 13122.8 | 24522.8 | 0 |
 
 Per-stage p50 at c1: embed 77, retrieve 3, rerank 176, ttft 626, generate 1395, total 1662
+
+## `qwen38-27b-gguf-ud-q4km-mtp3` — `config/serving/llamacpp-qwen38-27b.yaml`
+
+- model `qwen38-27b-gguf-ud-q4km` · vLLM ? · load 5 s · vLLM alive after run: True
+
+### LLM-only (vLLM endpoint, no retrieval)
+
+| conc | req/s | out tok/s | TTFT p50 | TTFT p99 | total p50 | total p99 | errors |
+|---|---|---|---|---|---|---|---|
+| 1 | 0.135 | 69.0 | 302.0 | 316.3 | 7372.7 | 8774.0 | 0 |
+| 4 | 0.133 | 67.9 | 22920.2 | 24816.4 | 30148.5 | 32266.0 | 0 |
+| 8 | 0.136 | 69.4 | 52060.2 | 53674.4 | 58997.7 | 61277.7 | 0 |
+| 16 | 0.133 | 68.2 | 110920.1 | 115102.3 | 118138.3 | 122056.6 | 0 |
+| 32 | 0.133 | 68.0 | 181880.1 | 235570.4 | 188908.0 | 242590.4 | 0 |
+
+### RAG end-to-end (through the gateway)
+
+| conc | req/s | out tok/s | TTFT p50 | TTFT p99 | total p50 | total p99 | errors |
+|---|---|---|---|---|---|---|---|
+| 1 | 0.175 | 44.8 | 2763.8 | 3150.1 | 5708.9 | 10443.0 | 0 |
+| 4 | 0.186 | 44.9 | 18535.4 | 22294.1 | 21173.1 | 26278.4 | 0 |
+| 8 | 0.184 | 45.3 | 38383.9 | 44477.9 | 40311.3 | 48533.0 | 0 |
+| 16 | 0.185 | 45.2 | 81041.7 | 85207.8 | 84171.6 | 89249.3 | 0 |
+
+Per-stage p50 at c1: embed 77, retrieve 3, rerank 178, ttft 2763, generate 5426, total 5697
 
 ## `qwen38-27b-w4a16-16k-bounded` — `config/serving/vllm-qwen38-27b-16k-bounded.yaml`
 
