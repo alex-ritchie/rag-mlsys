@@ -1,5 +1,35 @@
 # MLSysBook RAG Learning Companion
 
+> ## Status — 2026-08-22
+>
+> **Where things stand.** The full local stack runs end to end on the workstation: ingestion (2,815 chunks from the
+> pinned book commit), GPU-built hybrid index, **Qwen3.8-27B W4A16 served by vLLM on the RTX 3090 Ti** (M3 passed:
+> 10-minute soak at concurrency 8, zero errors, 351 tok/s), the FastAPI gateway with SSE citations and the OpenAI
+> shim, and the React frontend — `make up` brings all of it up in one command. Real questions return correct,
+> fully-cited answers ([example](docs/benchmarks/m3-baseline.md)).
+>
+> **Open experiment: where the reranker lives.** The spec's VRAM plan assumed ~1.5 GB of vLLM overhead; measured
+> overhead is ~3.7 GB, so the 27B leaves no room for the cross-encoder reranker on the GPU at a 32K context. The
+> spec's fallback (reranker on CPU) was measured and rejected — **22.6 s per query** (fp32) and still 2.7–11 s as
+> int8 ONNX. Trading context length for VRAM (16K, utilization 0.92) fits the GPU reranker at **261 ms** but leaves
+> ~0.5 GB of headroom and both processes OOM under a generation burst. Next trial: utilization 0.90 at 16K
+> (~19K KV tokens ≈ 4 concurrent RAG requests). Full attempt log with numbers:
+> [docs/benchmarks/m3-baseline.md](docs/benchmarks/m3-baseline.md); CPU-reranker sweep:
+> [docs/benchmarks/m2-retrieval.md](docs/benchmarks/m2-retrieval.md).
+>
+> **Decisions already made from measurements:** embedder on CPU (71 ms, under target); hosted demo is hybrid-only
+> with no reranker; vLLM pinned to 0.27.1 (+cu129) because driver 575 rejects CUDA-13 wheels; reranker is the first
+> non-GPU bottleneck (~3.9 req/s ceiling with a zero-cost LLM). All deviations from the design doc are logged in
+> [docs/DEVIATIONS.md](docs/DEVIATIONS.md).
+>
+> **Next steps, in order.** (1) Settle reranker placement and make it the `make up` default. (2) Golden set:
+> candidates are being generated with Claude Opus 5; the owner's verification pass (`make golden-verify`) unlocks
+> `make eval` and every quality comparison after it. (3) Validate the Haiku judge against 30 hand labels. (4) M8:
+> the four-model ablation (9B, 35B-A3B MoE, llama.cpp+MTP) each at its *own* best VRAM configuration, plus the
+> serving and chunking sweeps (prefix caching, CUDA graphs vs eager, MTP, reasoning on/off, chunk size
+> 400/600/800, small-to-big). (5) k3s + dashboards + the HPA demo (needs `docker` group membership on the
+> workstation), then the hosted demo and the benchmark report.
+
 A RAG learning companion for the two-volume textbook **[*Machine Learning Systems*](https://mlsysbook.ai/) by Vijay Janapa Reddi** (Harvard; [source](https://github.com/harvard-edge/cs249r_book), CC BY-NC-SA 4.0). Ask a question, get a grounded answer with inline citations, see everything from retrieval scores to latency breakdowns.
 
 I am building this project to help me study and practice the technical content of the ML Systems textbook. This tool serves to demonstrate several **fundamental MLE concepts** and the **ML System Lifecycle**:

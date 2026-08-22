@@ -1,6 +1,6 @@
 export const API_BASE: string = (import.meta.env.VITE_API_BASE as string | undefined) ?? ''
 export const PROFILE: 'local' | 'demo' = (import.meta.env.VITE_PROFILE as 'local' | 'demo' | undefined) ?? 'local'
-export const REPO_URL = 'https://github.com/alexritchie/mlsysbook-rag'
+export const REPO_URL = 'https://github.com/alex-ritchie/rag-mlsys'
 export const BOOK = {
   title: 'Machine Learning Systems',
   author: 'Vijay Janapa Reddi',

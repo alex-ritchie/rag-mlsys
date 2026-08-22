@@ -92,10 +92,11 @@ class LexicalOverlapBackend:
 
 
 def load_backend(mode: str, model: str = "BAAI/bge-reranker-v2-m3") -> RerankBackend:
+    max_length = int(os.environ.get("RERANKER_MAX_LENGTH", "1024"))  # 512 halves activation memory when co-resident with vLLM
     if mode == "gpu":
-        return CrossEncoderBackend(model, device="cuda")
+        return CrossEncoderBackend(model, device="cuda", max_length=max_length)
     if mode == "cpu":
-        return CrossEncoderBackend(model, device="cpu")
+        return CrossEncoderBackend(model, device="cpu", max_length=max_length)
     if mode == "onnx":
         return OnnxRerankBackend()
     if mode == "test":

@@ -17,7 +17,7 @@ streaming answer. GPU steps assume an NVIDIA card with ≥ 24 GB and a 12.x-capa
 - Compose path: Docker 24+ with the NVIDIA container toolkit.
 
 ```bash
-git clone https://github.com/alexritchie/mlsysbook-rag && cd mlsysbook-rag
+git clone https://github.com/alex-ritchie/rag-mlsys && cd mlsysbook-rag
 cp .env.example .env           # every variable is documented there
 make setup                     # uv workspace (CPU deps) + frontend deps + pre-commit
 make setup-models              # adds torch (cu128), sentence-transformers, onnxruntime  (~4 GB)

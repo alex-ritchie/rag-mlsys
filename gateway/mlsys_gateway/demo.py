@@ -11,7 +11,7 @@ from mlsys_common.settings import Settings
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-RUN_IT_YOURSELF = "https://github.com/alexritchie/mlsysbook-rag#run-it-yourself"
+RUN_IT_YOURSELF = "https://github.com/alex-ritchie/rag-mlsys#run-it-yourself"
 
 
 class DemoLimitError(Exception):
