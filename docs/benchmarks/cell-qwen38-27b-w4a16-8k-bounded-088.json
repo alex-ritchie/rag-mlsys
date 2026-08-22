@@ -1,0 +1,262 @@
+{
+  "tag": "qwen38-27b-w4a16-8k-bounded-088",
+  "serving_config": "config/serving/vllm-qwen38-27b-8k-bounded-088.yaml",
+  "model": "qwen38-27b-w4a16",
+  "serving_args": {
+    "max-model-len": 8192,
+    "gpu-memory-utilization": 0.88,
+    "enable-prefix-caching": true,
+    "reasoning-parser": "qwen3",
+    "language-model-only": true,
+    "max-num-seqs": 24,
+    "max-num-batched-tokens": 2048,
+    "dtype": "auto",
+    "trust-remote-code": true
+  },
+  "load_seconds": 40,
+  "weights": "Model loading took 16.59 GiB",
+  "kv": "Available KV cache memory: 3.35 GiB",
+  "kv_tokens": "GPU KV cache size: 33,731 tokens",
+  "max_concurrency_at_full_context": "Maximum concurrency for 8,192 tokens per request: 4.12x",
+  "vram_mib": {
+    "vllm_only": 21235,
+    "with_embedder_reranker": 22647,
+    "peak_gateway_load": 24095
+  },
+  "placement": {
+    "embedder": "cpu",
+    "reranker": "gpu",
+    "reranker_max_length": 512
+  },
+  "oom_or_cuda_errors": 30,
+  "gateway_500s": 0,
+  "vllm_alive_after": true,
+  "llm_only": [
+    {
+      "concurrency": 1,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 480.84,
+      "requests_per_s": 0.1,
+      "output_tokens_per_s": 51.1,
+      "ttft_ms": {
+        "p50": 37.7,
+        "p90": 38.7,
+        "p99": 39.0
+      },
+      "total_ms": {
+        "p50": 10017.6,
+        "p90": 10018.4,
+        "p99": 10019.3
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 4,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 135.92,
+      "requests_per_s": 0.353,
+      "output_tokens_per_s": 180.8,
+      "ttft_ms": {
+        "p50": 110.2,
+        "p90": 111.0,
+        "p99": 121.7
+      },
+      "total_ms": {
+        "p50": 11325.6,
+        "p90": 11326.3,
+        "p99": 11337.2
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 8,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 69.69,
+      "requests_per_s": 0.689,
+      "output_tokens_per_s": 352.6,
+      "ttft_ms": {
+        "p50": 173.6,
+        "p90": 180.0,
+        "p99": 180.7
+      },
+      "total_ms": {
+        "p50": 11613.9,
+        "p90": 11619.0,
+        "p99": 11620.2
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 16,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 41.47,
+      "requests_per_s": 1.157,
+      "output_tokens_per_s": 592.6,
+      "ttft_ms": {
+        "p50": 313.9,
+        "p90": 354.2,
+        "p99": 355.0
+      },
+      "total_ms": {
+        "p50": 13819.9,
+        "p90": 13855.5,
+        "p99": 13856.6
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 32,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 48.86,
+      "requests_per_s": 0.982,
+      "output_tokens_per_s": 503.0,
+      "ttft_ms": {
+        "p50": 17954.7,
+        "p90": 18097.0,
+        "p99": 18097.6
+      },
+      "total_ms": {
+        "p50": 31035.0,
+        "p90": 35558.3,
+        "p99": 35559.1
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    }
+  ],
+  "rag_e2e": [
+    {
+      "concurrency": 1,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 222.54,
+      "requests_per_s": 0.144,
+      "output_tokens_per_s": 34.8,
+      "ttft_ms": {
+        "p50": 2220.3,
+        "p90": 2403.4,
+        "p99": 2609.3
+      },
+      "total_ms": {
+        "p50": 6820.2,
+        "p90": 9607.0,
+        "p99": 12480.7
+      },
+      "stage_ms_p50": {
+        "embed_ms": 61.7,
+        "retrieve_ms": 3.4,
+        "rerank_ms": 176.9,
+        "ttft_ms": 2219.3,
+        "generate_ms": 6571.5,
+        "total_ms": 6807.9
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 4,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 118.32,
+      "requests_per_s": 0.27,
+      "output_tokens_per_s": 70.0,
+      "ttft_ms": {
+        "p50": 3936.8,
+        "p90": 4508.8,
+        "p99": 6079.6
+      },
+      "total_ms": {
+        "p50": 14243.0,
+        "p90": 21743.5,
+        "p99": 26768.1
+      },
+      "stage_ms_p50": {
+        "embed_ms": 64.0,
+        "retrieve_ms": 3.3,
+        "rerank_ms": 371.0,
+        "ttft_ms": 3936.0,
+        "generate_ms": 13754.1,
+        "total_ms": 14230.7
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 8,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 100.71,
+      "requests_per_s": 0.318,
+      "output_tokens_per_s": 80.1,
+      "ttft_ms": {
+        "p50": 4831.0,
+        "p90": 10627.5,
+        "p99": 16843.4
+      },
+      "total_ms": {
+        "p50": 21062.1,
+        "p90": 36968.6,
+        "p99": 53828.1
+      },
+      "stage_ms_p50": {
+        "embed_ms": 78.3,
+        "retrieve_ms": 3.4,
+        "rerank_ms": 611.9,
+        "ttft_ms": 4829.9,
+        "generate_ms": 20442.1,
+        "total_ms": 21060.1
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 16,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 98.52,
+      "requests_per_s": 0.325,
+      "output_tokens_per_s": 74.2,
+      "ttft_ms": {
+        "p50": 25661.0,
+        "p90": 36451.9,
+        "p99": 46158.3
+      },
+      "total_ms": {
+        "p50": 41958.3,
+        "p90": 58483.6,
+        "p99": 68102.5
+      },
+      "stage_ms_p50": {
+        "embed_ms": 92.7,
+        "retrieve_ms": 3.6,
+        "rerank_ms": 179.4,
+        "ttft_ms": 25659.8,
+        "generate_ms": 41866.7,
+        "total_ms": 41955.9
+      },
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    }
+  ],
+  "bench_files": [
+    "bench/results/20260822T191749Z-cell-qwen38-27b-w4a16-8k-bounded-088-llm-only.json",
+    "bench/results/20260822T192750Z-cell-qwen38-27b-w4a16-8k-bounded-088-rag-e2e.json"
+  ],
+  "vllm_version": {
+    "version": "0.27.1"
+  }
+}
