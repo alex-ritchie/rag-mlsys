@@ -79,7 +79,7 @@ doc = {
   "weights": "$WEIGHTS", "kv": "$KV", "kv_tokens": "$KVTOK", "max_concurrency_at_full_context": "$CONC",
   "vram_mib": {"vllm_only": $V_LLM, "with_embedder_reranker": $V_ALL, "peak_gateway_load": $PEAK},
   "placement": {"embedder": "$EMBEDDER_MODE", "reranker": "$RERANKER_MODE", "reranker_max_length": $RERANKER_MAX_LENGTH},
-  "oom_or_cuda_errors": $ERR, "gateway_500s": int("$G500" or 0), "vllm_alive_after": $ALIVE,
+  "oom_or_cuda_errors": $ERR, "gateway_500s": int("$G500" or 0), "vllm_alive_after": "$ALIVE" == "true",
   "engine_direct": d["runs"], "gateway_e2e": g["runs"],
   "bench_files": [direct, gateway], "vllm_version": d.get("server", {}).get("version"),
 }

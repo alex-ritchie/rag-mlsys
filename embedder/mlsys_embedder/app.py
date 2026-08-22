@@ -22,6 +22,7 @@ EMBED_LATENCY = Histogram(
 EMBED_TEXTS = Counter("embedder_texts_total", "Texts embedded")
 
 _backend: EmbeddingBackend | None = None
+_slots: anyio.Semaphore | None = None  # serialize model calls (EMBEDDER_CONCURRENCY, default 1)
 
 
 @asynccontextmanager
@@ -31,6 +32,8 @@ async def lifespan(app: FastAPI):
     mode = os.environ.get("EMBEDDER_MODE", s.embedder_mode)
     _backend = await anyio.to_thread.run_sync(load_backend, mode, s.embedder_model)
     app.state.mode = mode
+    global _slots
+    _slots = anyio.Semaphore(int(os.environ.get("EMBEDDER_CONCURRENCY", "1")))
     yield
 
 
@@ -48,11 +51,12 @@ async def health() -> dict:
 
 @app.post("/embed", response_model=EmbedResponse)
 async def embed(req: EmbedRequest) -> EmbedResponse:
-    assert _backend is not None
-    t0 = time.perf_counter()
-    # run the model off the event loop (sync torch/onnx call)
-    vecs = await anyio.to_thread.run_sync(lambda: _backend.embed(req.texts, req.normalize))
-    EMBED_LATENCY.observe(time.perf_counter() - t0)
+    assert _backend is not None and _slots is not None
+    async with _slots:
+        t0 = time.perf_counter()
+        # run the model off the event loop (sync torch/onnx call)
+        vecs = await anyio.to_thread.run_sync(lambda: _backend.embed(req.texts, req.normalize))
+        EMBED_LATENCY.observe(time.perf_counter() - t0)
     EMBED_TEXTS.inc(len(req.texts))
     return EmbedResponse(embeddings=vecs.tolist(), model=_backend.name, dim=_backend.dim)
 

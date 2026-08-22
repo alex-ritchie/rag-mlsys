@@ -82,19 +82,32 @@ async def retrieve_and_rerank(
     M.STAGE_SECONDS.labels("retrieve").observe(lat.retrieve_ms / 1000)
 
     t2 = now_ms()
+    rerank_error: str | None = None
     if rerank and deps.reranker is not None and fused:
-        results = await deps.reranker.rerank(question, [c.text for c in fused], top_k)
-        reranked = []
-        for r in results:
-            c = fused[r.index].model_copy()
-            c.rerank_score = r.score
-            reranked.append(c)
+        try:
+            results = await deps.reranker.rerank(question, [c.text for c in fused], top_k)
+        except (
+            Exception
+        ) as e:  # reranker overloaded/OOM: degrade to the fused order rather than fail the answer
+            M.ERRORS.labels(stage="rerank").inc()
+            results = None
+            rerank_error = f"{type(e).__name__}: {str(e)[:120]}"
+        if results is not None:
+            reranked = []
+            for r in results:
+                c = fused[r.index].model_copy()
+                c.rerank_score = r.score
+                reranked.append(c)
+        else:
+            reranked = [c.model_copy() for c in fused[:top_k]]
     else:
         reranked = [c.model_copy() for c in fused[:top_k]]
     lat.rerank_ms = now_ms() - t2
     M.STAGE_SECONDS.labels("rerank").observe(lat.rerank_ms / 1000)
     if reranked and reranked[0].rerank_score is not None:
         M.RERANK_TOP1.observe(reranked[0].rerank_score)
+    if rerank_error:
+        lat.rerank_error = rerank_error
     return fused, reranked
 
 

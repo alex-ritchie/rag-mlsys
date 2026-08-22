@@ -66,6 +66,9 @@ class LatencyBreakdown(BaseModel):
     ttft_ms: float = 0.0
     generate_ms: float = 0.0
     total_ms: float = 0.0
+    rerank_error: str | None = (
+        None  # set when reranking failed and the fused order was used instead
+    )
 
 
 class Usage(BaseModel):
