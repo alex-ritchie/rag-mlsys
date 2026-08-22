@@ -28,7 +28,8 @@ verified golden set. "Own best" means each model runs at the configuration its V
 | Cell | Varies vs. primary | Weights | KV cache (tokens) | Placement | Direct tok/s @c1 / @c8 / peak | Gateway TTFT p50 @c1 / @c8 | Quality |
 |---|---|---|---|---|---|---|---|
 | Qwen3.8-27B W4A16 / vLLM, 16K, util 0.90 | — (primary) | 16.6 GiB | 3.8 GiB (47.9K) | emb CPU, rerank GPU@512 | 51 / 352 / **593 @c16** | 2.3 s / **fails @c4** (vLLM OOM with the co-resident reranker) | _pending_ |
-| Qwen3.8-27B W4A16, 8K, util 0.88 | co-residency variant | 16.6 GiB | _pending_ | emb CPU, rerank GPU@512 | _pending_ | _pending_ | _pending_ |
+| Qwen3.8-27B W4A16, 8K, util 0.88, seqs 24 | co-residency variant A | 16.6 GiB | 1.27 GiB (12.5K) | emb CPU, rerank GPU@512 | 51 / 275 / 275 @c8 (KV-bound) | 2.2 s / 26 s (queueing, **0 errors**, peak 23.2 GB) | _pending_ |
+| Qwen3.8-27B W4A16, 16K, util 0.90, seqs 24, prefill chunk 2048 | co-residency variant B | 16.6 GiB | _pending_ | emb CPU, rerank GPU@512 | _pending_ | _pending_ | _pending_ |
 | Qwen3.5-9B W4A16 / vLLM, 32K, util 0.80 | size | 9.5 GiB | **6.6 GiB (195.7K)** | emb GPU, rerank GPU@1024 | **95 / 697 / 1,508 @c32** | **0.41 s / 0.97 s** | _pending_ |
 | Qwen3.5-9B BF16 / vLLM, 32K, util 0.90 | quantization (none vs 4-bit) | 16.8 GiB | 2.2 GiB (64.1K) | emb CPU, rerank GPU@1024 | 51 / 386 / 917 @c32 | 1.0 s / 1.9 s | _pending_ |
 | Qwen3.6-35B-A3B W4A16 / vLLM | dense → MoE | | | | _pending_ | | |
@@ -48,8 +49,13 @@ verified golden set. "Own best" means each model runs at the configuration its V
    so more sequences fit.
 3. **The KV budget, not the weights, decides what the gateway can serve.** Through the full pipeline the 9B W4A16
    holds TTFT under 1 s at c8; the 27B cannot complete c4 because co-residency with the reranker leaves vLLM no slack
-   (`Tried to allocate 66 MiB … 26 MiB free`). The 8K-context variant trades context the RAG path never uses for
-   that slack — its row is pending.
+   (`Tried to allocate 66 MiB … 26 MiB free`). Variant A (8K context, util 0.88) buys that slack and is **stable
+   under every load level with zero errors**, but at the price of a 1.27 GiB KV cache (12.5K tokens ≈ 3 RAG
+   requests in flight): throughput flat-lines at 275 tok/s from c8 and gateway TTFT is 9.4 s at c4 — safe but
+   queue-bound. Variant B keeps the 16K KV budget and instead bounds vLLM's *transient* prefill memory
+   (`--max-num-batched-tokens 2048`, `--max-num-seqs 24`) so it cannot allocate past its reserve — pending.
+   Either way the conclusion stands: on 24 GB the 27B cannot have a co-resident reranker *and* high concurrency;
+   the 9B can have both.
 4. **The reranker is the gateway's bottleneck once generation is fast.** In the 9B W4A16 cell the rerank stage p50
    goes 263 ms @c1 → 782 ms @c8 → 1.4 s @c16 (queueing behind the serialized cross-encoder), and rerank OOM-recovery
    fired 13 times at that placement (0 failed requests). Cross-request batching and smaller reranker inputs are the
