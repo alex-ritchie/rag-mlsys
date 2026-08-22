@@ -1,0 +1,5 @@
+Context blocks from the book:
+
+{context}
+
+Question: {question}

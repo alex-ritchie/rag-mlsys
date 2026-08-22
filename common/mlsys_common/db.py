@@ -29,7 +29,8 @@ def make_engine(url: str | None = None, **kw: object) -> AsyncEngine:
 
 
 def _statements(sql: str) -> list[str]:
-    return [s.strip() for s in sql.split(";") if s.strip() and not s.strip().startswith("--")]
+    no_comments = "\n".join(line for line in sql.splitlines() if not line.lstrip().startswith("--"))
+    return [s.strip() for s in no_comments.split(";") if s.strip()]
 
 
 async def migrate(engine: AsyncEngine) -> None:

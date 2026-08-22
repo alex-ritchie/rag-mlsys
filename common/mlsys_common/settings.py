@@ -33,9 +33,9 @@ class Settings(BaseSettings):
     disable_thinking: bool = True
 
     # embedder / reranker services
-    embedder_mode: Literal["cpu", "gpu", "onnx"] = "cpu"
+    embedder_mode: Literal["cpu", "gpu", "onnx", "test"] = "cpu"
     embedder_model: str = "BAAI/bge-m3"
-    reranker_mode: Literal["cpu", "gpu", "onnx"] = "cpu"
+    reranker_mode: Literal["cpu", "gpu", "onnx", "test"] = "cpu"
     reranker_model: str = "BAAI/bge-reranker-v2-m3"
 
     # demo profile

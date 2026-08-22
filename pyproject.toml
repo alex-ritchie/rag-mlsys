@@ -55,7 +55,7 @@ extend-exclude = ["data", "frontend", "eval/results", "bench/results"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N", "W", "SIM", "RUF", "ASYNC"]
-ignore = ["E501", "RUF012", "B008"]
+ignore = ["E501", "RUF012", "B008", "N812", "ASYNC240"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = ["S101", "ASYNC"]
