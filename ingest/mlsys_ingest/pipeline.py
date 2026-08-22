@@ -16,6 +16,7 @@ from mlsys_ingest.quarto import (
     resolve_crossrefs,
 )
 from mlsys_ingest.tokens import TokenCounter
+from mlsys_ingest.values import ValueStats, materialise, resolver_available
 
 
 @dataclass
@@ -53,13 +54,27 @@ def parse_corpus(cfg: IngestConfig, checkout: Path) -> list[tuple[ChapterRef, Do
         drop_div_attrs=cfg.chunking.drop_div_attrs,
     )
     out: list[tuple[ChapterRef, Document]] = []
+    resolve = cfg.chunking.resolve_inline_values and resolver_available()
+    if cfg.chunking.resolve_inline_values and not resolver_available():
+        print(
+            "warning: data/mlsysim-venv missing (run `make setup-mlsysim`); inline values will be `[value]`"
+        )
+    vstats = ValueStats()
     for vol in cfg.volumes:
         for ref in select_chapters(cfg, checkout, vol):
             p = checkout / ref.rel_path
             if not p.exists():
                 print(f"warning: missing {ref.rel_path}")
                 continue
-            out.append((ref, parse_file(p, parser, source_file=ref.rel_path)))
+            if resolve:
+                src = materialise(p, vstats)
+                out.append((ref, parser.parse(src, ref.rel_path)))
+            else:
+                out.append((ref, parse_file(p, parser, source_file=ref.rel_path)))
+    if resolve:
+        print(
+            f"inline values: {vstats.resolved}/{vstats.inline} resolved ({vstats.cells_ok}/{vstats.cells} cells)"
+        )
     docs = [d for _, d in out]
     resolve_crossrefs(docs, collect_labels(docs))
     return out

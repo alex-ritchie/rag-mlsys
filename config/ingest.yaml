@@ -32,3 +32,6 @@ chunking:
   drop_code_langs: ["python", "r", "tikz", "=html", "=latex"]
   drop_div_classes: ["quiz-end", "callout-learning-objectives", "callout-research-questions", "callout-notebook", "callout-quiz"]
   drop_div_attrs: ['when-format="pdf"']
+  # Execute the hidden `{python}` calculation cells with the book's mlsysim package (data/mlsysim-venv, `make
+  # setup-mlsysim`) and substitute the rendered inline values; otherwise they become "[value]".
+  resolve_inline_values: true

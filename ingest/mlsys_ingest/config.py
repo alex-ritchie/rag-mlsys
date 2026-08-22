@@ -34,6 +34,9 @@ class ChunkingConfig(BaseModel):
     drop_code_langs: list[str] = ["python", "r", "tikz", "=html", "=latex"]
     drop_div_classes: list[str] = []
     drop_div_attrs: list[str] = []
+    resolve_inline_values: bool = (
+        True  # execute the book's calculation cells (mlsysim) to materialise numbers
+    )
 
 
 class IngestConfig(BaseModel):

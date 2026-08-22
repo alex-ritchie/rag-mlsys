@@ -263,7 +263,9 @@ def verify(
                 console.rule(f"[{i + 1}/{len(todo)}] {c.id}  type={c.type}  {c.chapter}")
                 for h in c.source_chunk_content_hashes:
                     hp, txt = await chunk_text(h)
-                    console.print(Panel(escape(txt[:2500]), title=escape(hp), subtitle=h[:12], expand=False))
+                    console.print(
+                        Panel(escape(txt[:2500]), title=escape(hp), subtitle=h[:12], expand=False)
+                    )
                 console.print(f"[bold cyan]Q:[/] {escape(c.question)}")
                 for kp in c.answer_key_points:
                     console.print(f"   • {escape(kp)}")

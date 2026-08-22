@@ -24,6 +24,9 @@ setup-models: ## Install the GPU/model extras (torch, sentence-transformers) —
 setup-vllm: ## Install vLLM (cu129 wheel, pinned torch) into its own venv at data/vllm-venv
 	./scripts/setup_vllm.sh
 
+setup-mlsysim: ## Install the book's mlsysim calc package into data/mlsysim-venv (materialises inline numbers at ingest)
+	./scripts/setup_mlsysim.sh
+
 ## ---- quality --------------------------------------------------------------
 lint: ## Ruff lint + format check, mypy, frontend lint
 	$(PY) ruff check .
@@ -65,6 +68,12 @@ ingest: db-migrate ## Fetch + parse + chunk + load chunks into Postgres (idempot
 
 ingest-dry: ## Parse + chunk without a database; prints chunk statistics
 	$(PY) python -m mlsys_ingest.cli dry-run
+
+reingest: ## Re-ingest after a chunking/values change WITHOUT losing golden labels: snapshot -> ingest -> index -> remap hashes
+	$(PY) python scripts/migrate_golden_hashes.py snapshot
+	$(PY) python -m mlsys_ingest.cli run
+	$(PY) python -m mlsys_embedder.index --mode $(or $(EMBEDDER_MODE),gpu)
+	$(PY) python scripts/migrate_golden_hashes.py apply
 
 index: ## Embed all chunks with bge-m3 (GPU batch job) and build the HNSW index
 	$(PY) python -m mlsys_embedder.index
@@ -145,4 +154,4 @@ demo-deploy: ## Deploy the demo backend (fly.io) + frontend (Cloudflare Pages)
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t/' | awk -F'\t' '{printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: up setup setup-models setup-vllm lint fmt test test-integration guard ci db-up db-down db-migrate fetch ingest ingest-dry index retrieval-smoke embedder reranker gateway dev vllm golden-generate golden-verify eval eval-retrieval judge-validate bench bench-sweeps bench-report compose-up compose-down images k8s-apply k8s-delete hpa-demo demo-load-supabase demo-deploy help
+.PHONY: up setup setup-models setup-vllm setup-mlsysim reingest lint fmt test test-integration guard ci db-up db-down db-migrate fetch ingest ingest-dry index retrieval-smoke embedder reranker gateway dev vllm golden-generate golden-verify eval eval-retrieval judge-validate bench bench-sweeps bench-report compose-up compose-down images k8s-apply k8s-delete hpa-demo demo-load-supabase demo-deploy help
