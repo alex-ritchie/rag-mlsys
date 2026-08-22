@@ -14,7 +14,6 @@ import argparse
 import json
 import os
 import shlex
-import subprocess
 import sys
 from pathlib import Path
 
@@ -99,7 +98,8 @@ def main() -> int:
     env = {**os.environ, **{k: str(v) for k, v in cfg.get("env", {}).items()}}
     env.setdefault("HF_HOME", str(ROOT / "data" / "hf-cache"))
     env.setdefault("HF_HUB_DISABLE_XET", "1")  # the Xet transport stalled repeatedly on this link; plain HTTPS is fine
-    return subprocess.call(cmd, env=env)
+    # exec so the server *is* this process: whoever started us (make up, m3_measure.sh) can stop it by PID.
+    os.execvpe(cmd[0], cmd, env)
 
 
 if __name__ == "__main__":

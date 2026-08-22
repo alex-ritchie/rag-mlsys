@@ -76,7 +76,7 @@ T_START=$(date +%s)
 start() { # name port cmd...
   local name=$1 port=$2; shift 2
   echo "== $name (:$port, log: data/logs/$name.log)"
-  "$@" >"$LOGS/$name.log" 2>&1 &
+  setsid "$@" >"$LOGS/$name.log" 2>&1 &
   PIDS+=($!)
 }
 wait_for() { # name url pid timeout_s
@@ -91,7 +91,7 @@ wait_for() { # name url pid timeout_s
 since() { echo "$(( $(date +%s) - T_START ))s"; }
 cleanup() {
   echo; echo "== stopping"
-  for p in "${PIDS[@]}"; do kill "$p" 2>/dev/null || true; done
+  for p in "${PIDS[@]}"; do kill -- -"$p" 2>/dev/null || kill "$p" 2>/dev/null || true; done
   pkill -P $$ 2>/dev/null || true
   wait 2>/dev/null || true
 }
@@ -111,7 +111,7 @@ if [[ "$PROFILE" == "local" && "$LLM_MODEL" != "fake" ]]; then
       echo "!! vLLM is not installed (data/vllm-venv). See docs/RUN_IT_YOURSELF.md §5, or use LLM_MODEL=fake / PROFILE=demo."; exit 1
     fi
     echo "== vllm ($VLLM_CONFIG, :8003, log: data/logs/vllm.log) — model load takes a few minutes"
-    uv run python scripts/serve_vllm.py "$VLLM_CONFIG" >"$LOGS/vllm.log" 2>&1 &
+    setsid uv run python scripts/serve_vllm.py "$VLLM_CONFIG" >"$LOGS/vllm.log" 2>&1 &
     PIDS+=($!)
     wait_for vllm http://localhost:8003/health "${PIDS[-1]}" 1200; echo "   vllm ready at $(since)"
   else
