@@ -11,5 +11,5 @@ uv venv -q -p 3.12 data/vllm-venv
 export VIRTUAL_ENV=$PWD/data/vllm-venv
 uv pip install "torch==2.13.0" torchvision torchaudio --index-url "https://download.pytorch.org/whl/$CUDA"
 uv pip install "https://github.com/vllm-project/vllm/releases/download/v${VLLM_VERSION}/vllm-${VLLM_VERSION}+${CUDA}-cp38-abi3-manylinux_2_28_x86_64.whl" \
-  --extra-index-url "https://download.pytorch.org/whl/$CUDA"
+  --extra-index-url "https://download.pytorch.org/whl/$CUDA" --index-strategy unsafe-best-match
 data/vllm-venv/bin/python -c "import vllm, torch, transformers; print('vllm', vllm.__version__, '| torch', torch.__version__, '| transformers', transformers.__version__, '| cuda', torch.cuda.is_available())"
