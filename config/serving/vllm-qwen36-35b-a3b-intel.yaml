@@ -1,0 +1,19 @@
+# Architecture-ablation cell (spec §5.3): Qwen3.6-35B-A3B, MoE (256 experts, 8 active, ~3B active params).
+# Intel AutoRound int4 (mixed): attention is quantized too, so ~19.2 GiB on the GPU vs 22.0 for the AWQ build,
+# which OOMed inside torch.compile (docs/benchmarks/m3-baseline.md, MoE bring-up). 27B co-residency settings.
+engine: vllm
+model: Intel/Qwen3.6-35B-A3B-int4-mixed-AutoRound
+served_model_name: qwen36-35b-a3b-int4
+port: 8003
+args:
+  max-model-len: 8192
+  gpu-memory-utilization: 0.90
+  enable-prefix-caching: true
+  reasoning-parser: qwen3
+  language-model-only: true
+  max-num-seqs: 24
+  max-num-batched-tokens: 2048
+  dtype: auto
+  trust-remote-code: true
+env:
+  VLLM_USE_V1: "1"
