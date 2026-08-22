@@ -21,6 +21,29 @@ model parallelism?": 3,511-token prompt → 233-token answer citing Vol 2 Ch 5 *
 embed 104 ms · retrieve 14 ms · **rerank 282 ms** · TTFT 2.77 s · generate 6.96 s · total 7.36 s; 23.66 GB VRAM;
 Ctrl-C returned the GPU to 18 MiB.
 
+## Open issue: reranker `max_length` 512 truncates what the reranker *reads*
+
+The adopted placement sets the cross-encoder's input window to 512 tokens per (query, chunk) pair. Chunks are 400–800
+tokens (p50 680), so for most candidates the reranker scores only the first ~450 tokens of the chunk; the tail is
+invisible to ranking (the LLM still receives the whole chunk and answers are not cut — answer length is
+`MAX_OUTPUT_TOKENS`, and a `truncated` flag in the `done` event now reports when that cap is hit). Whether the
+blind tail hurts is an eval question (recall@5 / MRR with 512 vs 1024, on the verified golden set). Candidate fixes,
+cheapest first:
+
+1. **Chunk size 400** (`config/sweeps/ingest-chunk-400.yaml`): every chunk fits the 512 window; more, smaller chunks
+   also cut prompt size. Already on the M8 list.
+2. **Head + tail truncation**: score the first 256 and last 256 tokens of each chunk instead of the first 512 — a
+   few lines in the reranker backend; keeps section-ending summaries visible.
+3. **Windowed scoring**: split each chunk into 512-token windows, score all, take the max — 1.5–2× reranker cost
+   (still ~0.5 s on the GPU), no blind spots.
+4. **Small-to-big**: rerank on 256-token sub-chunks, send the parent chunk/section to the LLM (needs a parent
+   lookup at prompt time). Best ranking precision per token; already on the M8 list.
+5. **Buy the VRAM back**: `--max-model-len 8192` (RAG prompts are ~3.5K tokens) and/or `--max-num-seqs 8` to let
+   the reranker run at `max_length` 1024 alongside vLLM. Costs concurrency headroom — reported honestly in the
+   ablation as "c8 not sustainable at this setting" if that is what the soak shows.
+6. **Smaller LLM cell** (Qwen3.5-9B, ~6 GB): the ablation's natural answer — 32K context, reranker at 1024, GPU
+   embedder, more candidates, all at once.
+
 Environment: vLLM 0.27.1 (+cu129 wheel), torch 2.13.0+cu129, transformers 5.15.1, driver 575.57 (CUDA 12.9),
 model `dbirks/Qwen3.8-27B-W4A16-AutoRound` (compressed-tensors pack-quantized, group 128, symmetric int4),
 architecture `Qwen3_5ForConditionalGeneration` (64 layers: full + linear attention), attention block size auto-set to
