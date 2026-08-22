@@ -39,7 +39,7 @@ llm:
     display: "Qwen3.5-9B W8A8 (vLLM)"
     engine: vllm
     repo_candidates: [RedHatAI/Qwen3.5-9B-quantized.w8a8]
-    serving_config: null                      # optional third row if time allows
+    serving_config: config/serving/vllm-qwen35-9b-w8a8.yaml
     varies: "int8 weights+activations vs W4A16"
   arch_ablation:
     name: qwen36-35b-a3b-w4a16

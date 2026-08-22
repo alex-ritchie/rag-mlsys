@@ -1,0 +1,17 @@
+# Optional third 9B row: W8A8 (int8 weights AND activations). On Ampere int8 tensor cores make prefill compute
+# cheaper than W4A16's dequant-to-bf16 path at large batch; weights ~10 GB. Own-best placement like the W4A16 cell.
+engine: vllm
+model: RedHatAI/Qwen3.5-9B-quantized.w8a8
+served_model_name: qwen35-9b-w8a8
+port: 8003
+args:
+  max-model-len: 32768
+  gpu-memory-utilization: 0.85        # ~10 GB weights; leave room for GPU embedder + reranker(1024)
+  enable-prefix-caching: true
+  reasoning-parser: qwen3
+  language-model-only: true
+  max-num-seqs: 32
+  dtype: auto
+  trust-remote-code: true
+env:
+  VLLM_USE_V1: "1"
