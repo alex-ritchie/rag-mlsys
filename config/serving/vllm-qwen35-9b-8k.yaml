@@ -1,0 +1,19 @@
+# 8K-context variant of the 9B W4A16 cell (the reranker OOMed 13x at 32K/0.80 under gateway load).
+# Size-ablation cell (spec §5.3): Qwen3.5-9B W4A16 — same quant format/kernel as the 27B, ~1/3 the weights.
+# Run at the model's OWN best configuration (README status notes): full 32K context, GPU reranker at 1024,
+# GPU embedder — the VRAM the 27B could not afford.
+engine: vllm
+model: RedHatAI/Qwen3.5-9B-quantized.w4a16
+served_model_name: qwen35-9b-w4a16
+port: 8003
+args:
+  max-model-len: 8192               # RAG prompts are 3-4.5K tokens; frees vLLM reserve for the co-resident services
+  gpu-memory-utilization: 0.80        # leave ~4.5 GB for GPU embedder + reranker(1024) activations
+  enable-prefix-caching: true
+  reasoning-parser: qwen3
+  language-model-only: true
+  max-num-seqs: 32
+  dtype: auto
+  trust-remote-code: true
+env:
+  VLLM_USE_V1: "1"
