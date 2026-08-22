@@ -1,0 +1,50 @@
+# ---- licensing guard: book content, indexes, models NEVER enter the repo ----
+data/
+*.gguf
+*.safetensors
+*.bin
+*.pt
+*.onnx
+*.qmd
+!ingest/tests/fixtures/*.qmd
+
+# eval/bench run outputs (a curated copy of the latest report is committed explicitly)
+eval/results/*
+!eval/results/.gitkeep
+!eval/results/latest/
+bench/results/*
+!bench/results/.gitkeep
+!bench/results/latest/
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+htmlcov/
+.coverage
+
+# node
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# k8s local
+k8s/secrets.yaml
+*.kubeconfig
+
+# misc
+.DS_Store
+*.log
+.idea/
+.vscode/

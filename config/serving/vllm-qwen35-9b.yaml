@@ -1,0 +1,12 @@
+engine: vllm
+model: ""                            # fill at M8 with the community W4A16 repo (or the llm-compressor output)
+served_model_name: qwen35-9b-w4a16
+port: 8003
+args:
+  max-model-len: 32768
+  gpu-memory-utilization: 0.90
+  enable-prefix-caching: true
+  reasoning-parser: qwen3
+  language-model-only: true
+  max-num-seqs: 32
+  quantization: compressed-tensors

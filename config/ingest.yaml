@@ -1,0 +1,34 @@
+# Ingestion config (spec §5.1). The commit SHA is index provenance: stored on every chunk row.
+source:
+  repo: https://github.com/harvard-edge/cs249r_book.git
+  commit_sha: 2bd97c509923dc8d7cb0b3e2f489a7282fee5fbd   # main as of 2026-07-05
+  checkout_dir: data/book                                # GITIGNORED
+  license: CC-BY-NC-SA-4.0
+
+volumes:
+  - number: 1
+    title: "Introduction to Machine Learning Systems"
+    quarto_config: book/quarto/config/_quarto-html-vol1.yml   # chapter order comes from here
+    quarto_root: book/quarto
+  - number: 2
+    title: "Machine Learning Systems at Scale"
+    quarto_config: book/quarto/config/_quarto-html-vol2.yml
+    quarto_root: book/quarto
+
+selection:
+  # Chapter files are numbered 1..N in quarto `chapters:` order after these filters.
+  skip_path_substrings: ["/frontmatter/", "/parts/", "backmatter/references", "index.qmd", "socratiq"]
+  # Back-matter kept, numbered from 100 (appendices) and 200 (glossary) so the
+  # coverage browser can group them.
+  appendix_base: 100
+  glossary_base: 200
+
+chunking:
+  tokenizer: BAAI/bge-m3          # token counts are in this tokenizer (spec §5.1)
+  min_tokens: 400
+  max_tokens: 800
+  # Blocks that are dropped entirely (not content): hidden computation cells,
+  # TikZ diagrams, quiz/learning-objective scaffolding, PDF-only blocks.
+  drop_code_langs: ["python", "r", "tikz", "=html", "=latex"]
+  drop_div_classes: ["quiz-end", "callout-learning-objectives", "callout-research-questions", "callout-notebook", "callout-quiz"]
+  drop_div_attrs: ['when-format="pdf"']

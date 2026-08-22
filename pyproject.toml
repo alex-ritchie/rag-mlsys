@@ -1,0 +1,81 @@
+[project]
+name = "mlsysbook-rag"
+version = "0.1.0"
+description = "RAG learning companion for the Machine Learning Systems textbook (mlsysbook.ai)"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "mlsys-common",
+  "mlsys-ingest",
+  "mlsys-embedder",
+  "mlsys-reranker",
+  "mlsys-gateway",
+  "mlsys-eval",
+  "mlsys-bench",
+]
+
+[project.optional-dependencies]
+# GPU / model-serving extras. Never installed in CI.
+models = ["mlsys-embedder[models]", "mlsys-reranker[models]", "mlsys-ingest[tokenizer]"]
+onnx = ["mlsys-embedder[onnx]", "mlsys-reranker[onnx]"]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["common", "ingest", "embedder", "reranker", "gateway", "eval", "bench"]
+
+[tool.uv.sources]
+mlsys-common = { workspace = true }
+mlsys-ingest = { workspace = true }
+mlsys-embedder = { workspace = true }
+mlsys-reranker = { workspace = true }
+mlsys-gateway = { workspace = true }
+mlsys-eval = { workspace = true }
+mlsys-bench = { workspace = true }
+
+[dependency-groups]
+dev = [
+  "ruff>=0.7",
+  "mypy>=1.13",
+  "pytest>=8.3",
+  "pytest-asyncio>=0.24",
+  "pytest-cov>=6.0",
+  "pre-commit>=4.0",
+  "pgserver>=0.1.4",      # unprivileged Postgres+pgvector for integration tests
+  "openai>=1.50",         # used only by the OpenAI-shim acceptance test
+  "types-PyYAML",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["data", "frontend", "eval/results", "bench/results"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "W", "SIM", "RUF", "ASYNC"]
+ignore = ["E501", "RUF012", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101", "ASYNC"]
+
+[tool.mypy]
+python_version = "3.12"
+packages = ["mlsys_common", "mlsys_gateway", "mlsys_eval", "mlsys_ingest"]
+ignore_missing_imports = true
+warn_unused_ignores = false
+check_untyped_defs = true
+# permissive to start (per spec §4 M0); tighten per package as they stabilise
+disallow_untyped_defs = false
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["common", "ingest", "embedder", "reranker", "gateway", "eval", "bench"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+  "integration: needs a Postgres (pgserver) — slow, skipped with -m 'not integration'",
+  "models: downloads/loads real models — never run in CI",
+]
+filterwarnings = ["ignore::DeprecationWarning"]

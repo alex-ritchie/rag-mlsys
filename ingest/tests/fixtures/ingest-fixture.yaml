@@ -1,0 +1,18 @@
+source:
+  repo: file:///dev/null
+  commit_sha: "fixture0000000000000000000000000000000000"
+  checkout_dir: ingest/tests/fixtures
+volumes:
+  - number: 9
+    title: "Synthetic Fixture Book"
+    quarto_config: book/quarto/config/_quarto-html-vol9.yml
+    quarto_root: book/quarto
+selection:
+  skip_path_substrings: ["/frontmatter/", "/parts/", "backmatter/references", "index.qmd"]
+chunking:
+  tokenizer: BAAI/bge-m3
+  min_tokens: 60
+  max_tokens: 120
+  drop_code_langs: ["python", "r", "tikz", "=html", "=latex"]
+  drop_div_classes: ["callout-learning-objectives", "quiz-end"]
+  drop_div_attrs: ['when-format="pdf"']

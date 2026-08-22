@@ -1,0 +1,18 @@
+[project]
+name = "mlsys-embedder"
+version = "0.1.0"
+description = "bge-m3 embedding service (gpu|cpu|onnx)"
+requires-python = ">=3.12"
+dependencies = ["mlsys-common", "fastapi>=0.115", "uvicorn[standard]>=0.32", "numpy>=1.26", "prometheus-client>=0.21", "httpx>=0.27"]
+
+[project.optional-dependencies]
+models = ["sentence-transformers>=3.3", "torch>=2.5"]
+onnx = ["onnxruntime>=1.20", "optimum[onnxruntime]>=1.23", "tokenizers>=0.20"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+[tool.hatch.build.targets.wheel]
+packages = ["mlsys_embedder"]
+[tool.uv.sources]
+mlsys-common = { workspace = true }

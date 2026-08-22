@@ -1,0 +1,15 @@
+project:
+  type: book
+book:
+  title: "Synthetic Fixture Book"
+  chapters:
+    - index.qmd
+    - contents/vol9/frontmatter/about.qmd
+    - contents/vol9/intro/intro.qmd
+    - part: contents/vol9/parts/part_one.qmd
+      chapters:
+        - contents/vol9/widgets/widgets.qmd
+        - contents/vol9/gears/gears.qmd
+    - contents/vol9/backmatter/references.qmd
+    - contents/vol9/backmatter/appendix_units.qmd
+    - contents/vol9/backmatter/glossary/glossary.qmd

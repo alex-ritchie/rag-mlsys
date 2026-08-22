@@ -1,0 +1,53 @@
+# Model slate (spec §5.3). Repo IDs are config, not code — they drift. All Apache-2.0.
+embedding:
+  repo: BAAI/bge-m3
+  dim: 1024
+  onnx_repo: BAAI/bge-m3            # exported locally by scripts/export_onnx.py (int8) for the demo profile
+reranker:
+  repo: BAAI/bge-reranker-v2-m3
+  top_n_in: 30
+  top_k_out: 5
+
+llm:
+  primary:
+    name: qwen38-27b-w4a16
+    display: "Qwen3.8-27B W4A16 (vLLM)"
+    engine: vllm
+    repo_candidates:                 # tried in order at M3; the first that serves is pinned here
+      - dbirks/Qwen3.8-27B-W4A16-AutoRound
+      # - <philbert440 base-model AWQ build> — verify on HF at build time (spec §5.3)
+    serving_config: config/serving/vllm-qwen38-27b.yaml
+  size_ablation:
+    name: qwen35-9b-w4a16
+    display: "Qwen3.5-9B W4A16 (vLLM)"
+    engine: vllm
+    repo_candidates: []              # community AWQ/GPTQ; else quantize with llm-compressor (docs/recipes/)
+    serving_config: config/serving/vllm-qwen35-9b.yaml
+    varies: "parameter count, same family"
+  arch_ablation:
+    name: qwen36-35b-a3b-w4a16
+    display: "Qwen3.6-35B-A3B W4A16 (vLLM)"
+    engine: vllm
+    repo_candidates: []
+    serving_config: config/serving/vllm-qwen36-35b-a3b.yaml
+    varies: "dense vs MoE, same family"
+  engine_ablation:
+    name: qwen38-27b-gguf-ud-q4km
+    display: "Qwen3.8-27B UD-Q4_K_M (llama.cpp)"
+    engine: llamacpp
+    repo: unsloth/Qwen3.8-27B-GGUF
+    file: Qwen3.8-27B-UD-Q4_K_M.gguf
+    serving_config: config/serving/llamacpp-qwen38-27b.yaml
+    varies: "serving engine, same model"
+  fallback_primary:                  # spec §9: promote if Qwen3.8 cannot be made to serve within ~2 days
+    name: qwen36-27b-awq
+    display: "Qwen3.6-27B AWQ (vLLM)"
+    engine: vllm
+    repo_candidates: []
+
+judge:
+  provider: anthropic
+  model: claude-haiku-4-5
+demo_generation:
+  provider: anthropic
+  model: claude-haiku-4-5

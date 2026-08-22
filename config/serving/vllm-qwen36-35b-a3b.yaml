@@ -1,0 +1,12 @@
+engine: vllm
+model: ""                            # fill at M8 with a community W4A16/AWQ build with 3090 precedent
+served_model_name: qwen36-35b-a3b-w4a16
+port: 8003
+args:
+  max-model-len: 32768
+  gpu-memory-utilization: 0.90
+  enable-prefix-caching: true
+  reasoning-parser: qwen3
+  language-model-only: true
+  max-num-seqs: 32
+  quantization: compressed-tensors
