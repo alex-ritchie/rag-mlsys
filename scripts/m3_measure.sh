@@ -18,9 +18,14 @@ vram() { nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head
 if ss -ltn | grep -qE ":8003 "; then echo "!! :8003 already in use"; exit 1; fi
 echo "== starting vLLM ($CFG $*) — log $LOGS/vllm-m3.log"
 T0=$(date +%s)
-setsid uv run python scripts/serve_vllm.py "$CFG" "$@" >"$LOGS/vllm-m3.log" 2>&1 &
+uv run python scripts/serve_vllm.py "$CFG" "$@" >"$LOGS/vllm-m3.log" 2>&1 &
 VPID=$!
-trap 'kill -- -$VPID 2>/dev/null || kill $VPID 2>/dev/null || true; wait $VPID 2>/dev/null || true' EXIT
+killtree() { # kill a process and all of its descendants (uv run -> python -> vllm/uvicorn workers)
+  local pid=$1 child
+  for child in $(pgrep -P "$pid" 2>/dev/null); do killtree "$child"; done
+  kill "$pid" 2>/dev/null || true
+}
+trap 'killtree $VPID; wait $VPID 2>/dev/null || true' EXIT
 until curl -sf localhost:8003/health >/dev/null; do
   sleep 5
   if ! kill -0 $VPID 2>/dev/null; then echo "!! vLLM exited — tail of log:"; tail -40 "$LOGS/vllm-m3.log"; exit 1; fi
