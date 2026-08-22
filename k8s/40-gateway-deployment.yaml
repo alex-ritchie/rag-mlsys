@@ -1,0 +1,32 @@
+# The stateless tier and the HPA target. Requests are set from load-test data (see
+# docs/benchmarks/m4-gateway-overhead.md): ~120m CPU per replica at 8 concurrent streams;
+# the 70% HPA target on a 250m request trips at ~175m, i.e. ~12 concurrent streams per replica.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: mlsysbook
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: gateway}
+  template:
+    metadata:
+      labels: {app: gateway}
+      annotations: {prometheus.io/scrape: "true", prometheus.io/port: "8000", prometheus.io/path: /metrics}
+    spec:
+      containers:
+        - name: gateway
+          image: mlsysbook-rag/gateway:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef: {name: mlsys-config}
+          env:
+            - name: ANTHROPIC_API_KEY
+              valueFrom: {secretKeyRef: {name: mlsys-secrets, key: ANTHROPIC_API_KEY, optional: true}}
+          ports: [{containerPort: 8000}]
+          resources:
+            requests: {cpu: 250m, memory: 384Mi}
+            limits: {cpu: "1", memory: 1Gi}
+          readinessProbe: {httpGet: {path: /api/health, port: 8000}, periodSeconds: 5}
+          livenessProbe: {httpGet: {path: /api/health, port: 8000}, periodSeconds: 20}

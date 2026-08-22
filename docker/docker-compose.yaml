@@ -1,0 +1,107 @@
+# Full local stack (spec §4 M6). Profiles:
+#   core      db, embedder, reranker, gateway
+#   llm       vLLM (Qwen3.8-27B W4A16, needs the NVIDIA container toolkit)
+#   llm-gguf  llama.cpp server (engine ablation)
+#   obs       Prometheus + Grafana (+ DCGM exporter)
+#   frontend  nginx-served built app
+# Example: COMPOSE_PROFILES=core,llm,obs,frontend docker compose -f docker/docker-compose.yaml up -d
+name: mlsysbook-rag
+x-env: &env
+  env_file: [../.env]
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    profiles: [core]
+    environment: {POSTGRES_USER: mlsys, POSTGRES_PASSWORD: mlsys, POSTGRES_DB: mlsys}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    ports: ["5432:5432"]
+    healthcheck: {test: ["CMD-SHELL", "pg_isready -U mlsys"], interval: 5s, timeout: 3s, retries: 20}
+
+  embedder:
+    image: mlsysbook-rag/embedder:${TAG:-latest}
+    build: {context: .., dockerfile: docker/embedder.Dockerfile, args: {BASE: "mlsysbook-rag/python-base:${EMBEDDER_BASE:-cpu-models}"}}
+    profiles: [core]
+    <<: *env
+    environment: {EMBEDDER_MODE: "${EMBEDDER_MODE:-cpu}"}
+    volumes: [../data/hf-cache:/data/hf-cache]
+    ports: ["8001:8001"]
+    # GPU mode: uncomment (and set EMBEDDER_MODE=gpu, EMBEDDER_BASE=gpu-models)
+    # deploy: {resources: {reservations: {devices: [{driver: nvidia, count: 1, capabilities: [gpu]}]}}}
+
+  reranker:
+    image: mlsysbook-rag/reranker:${TAG:-latest}
+    build: {context: .., dockerfile: docker/reranker.Dockerfile, args: {BASE: "mlsysbook-rag/python-base:${RERANKER_BASE:-cpu-models}"}}
+    profiles: [core]
+    <<: *env
+    environment: {RERANKER_MODE: "${RERANKER_MODE:-cpu}"}
+    volumes: [../data/hf-cache:/data/hf-cache]
+    ports: ["8002:8002"]
+
+  gateway:
+    image: mlsysbook-rag/gateway:${TAG:-latest}
+    build: {context: .., dockerfile: docker/gateway.Dockerfile}
+    profiles: [core]
+    <<: *env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://mlsys:mlsys@db:5432/mlsys
+      EMBEDDER_URL: http://embedder:8001
+      RERANKER_URL: http://reranker:8002
+      LLM_BASE_URL: "${LLM_BASE_URL:-http://vllm:8003/v1}"
+    depends_on: {db: {condition: service_healthy}}
+    ports: ["8000:8000"]
+
+  vllm:
+    image: vllm/vllm-openai:${VLLM_TAG:-latest}     # pin the exact tag the moment M3 passes (spec §5.4)
+    profiles: [llm]
+    command: >
+      --model ${VLLM_MODEL:-dbirks/Qwen3.8-27B-W4A16-AutoRound} --served-model-name qwen38-27b-w4a16
+      --port 8003 --max-model-len 32768 --gpu-memory-utilization 0.90 --enable-prefix-caching
+      --reasoning-parser qwen3 --language-model-only --max-num-seqs 32 ${VLLM_EXTRA_ARGS:-}
+    environment: {HF_HOME: /data/hf-cache, VLLM_USE_V1: "1"}
+    volumes: [../data/hf-cache:/data/hf-cache]
+    ports: ["8003:8003"]
+    ipc: host
+    deploy: {resources: {reservations: {devices: [{driver: nvidia, count: 1, capabilities: [gpu]}]}}}
+    healthcheck: {test: ["CMD-SHELL", "curl -sf http://localhost:8003/health || exit 1"], interval: 30s, timeout: 5s, retries: 60, start_period: 600s}
+
+  llamacpp:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    profiles: [llm-gguf]
+    command: >
+      -m /models/Qwen3.8-27B-UD-Q4_K_M.gguf --alias qwen38-27b-gguf-ud-q4km --port 8003 --host 0.0.0.0
+      --jinja --spec-type draft-mtp --spec-draft-n-max 3 -c 32768 -ngl 99 --parallel 1
+    volumes: [../data/models:/models]
+    ports: ["8003:8003"]
+    deploy: {resources: {reservations: {devices: [{driver: nvidia, count: 1, capabilities: [gpu]}]}}}
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    profiles: [obs]
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=14d"]
+    volumes: ["./prometheus.yml:/etc/prometheus/prometheus.yml:ro", "../k8s/prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro", promdata:/prometheus]
+    ports: ["9090:9090"]
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    profiles: [obs]
+    environment: {GF_SECURITY_ADMIN_PASSWORD: admin, GF_AUTH_ANONYMOUS_ENABLED: "true"}
+    volumes: ["./grafana/provisioning:/etc/grafana/provisioning:ro", "../k8s/grafana/dashboards:/var/lib/grafana/dashboards:ro"]
+    ports: ["3000:3000"]
+
+  dcgm-exporter:
+    image: nvcr.io/nvidia/k8s/dcgm-exporter:3.3.9-3.6.1-ubuntu22.04
+    profiles: [obs]
+    cap_add: [SYS_ADMIN]
+    ports: ["9400:9400"]
+    deploy: {resources: {reservations: {devices: [{driver: nvidia, count: 1, capabilities: [gpu]}]}}}
+
+  frontend:
+    image: mlsysbook-rag/frontend:${TAG:-latest}
+    build: {context: .., dockerfile: docker/frontend.Dockerfile, args: {VITE_API_BASE: "", VITE_PROFILE: local}}
+    profiles: [frontend]
+    ports: ["8080:80"]
+    depends_on: [gateway]
+
+volumes:
+  pgdata: {}
+  promdata: {}

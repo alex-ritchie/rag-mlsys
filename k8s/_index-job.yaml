@@ -1,0 +1,31 @@
+# One-shot: ingest + embed (borrows the GPU; run while vLLM is scaled to 0). Apply separately:
+#   kubectl scale deploy/vllm --replicas=0 -n mlsysbook && kubectl create -f k8s/91-index-job.yaml
+# File starts with an underscore so `kubectl apply -f k8s/` skips it (kubectl ignores dotfiles/underscore? No — it does not;
+# so this file is excluded by the Makefile target: `make k8s-apply` applies k8s/[0-9]*.yaml only).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: build-index
+  namespace: mlsysbook
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      runtimeClassName: nvidia
+      containers:
+        - name: index
+          image: mlsysbook-rag/embedder:latest-gpu
+          command: ["bash", "-lc", "python -m mlsys_ingest.cli run && python -m mlsys_embedder.index --mode gpu"]
+          envFrom:
+            - configMapRef: {name: mlsys-config}
+          resources:
+            limits: {nvidia.com/gpu: 1, memory: 16Gi}
+          volumeMounts:
+            - {name: hf-cache, mountPath: /data/hf-cache}
+            - {name: book, mountPath: /app/data/book}
+      volumes:
+        - name: hf-cache
+          hostPath: {path: /var/lib/mlsysbook/hf-cache, type: DirectoryOrCreate}
+        - name: book
+          hostPath: {path: /var/lib/mlsysbook/book, type: DirectoryOrCreate}

@@ -1,0 +1,32 @@
+# Fly.io config for the demo backend (PROFILE=demo). Smallest VM that runs a ~2 GB-RAM Python process.
+app = "mlsysbook-rag-demo"
+primary_region = "iad"
+
+[build]
+  dockerfile = "gateway.Dockerfile"
+
+[env]
+  PROFILE = "demo"
+  DEMO_GENERATION_MODEL = "claude-haiku-4-5"
+  DEMO_EMBEDDER = "inprocess-onnx"
+  DEMO_RERANK = "onnx"
+  DEMO_RATE_LIMIT_PER_DAY = "10"
+  DEMO_DAILY_BUDGET_USD = "2.00"
+  EMBEDDER_ONNX_DIR = "/data/onnx/bge-m3-int8"
+  RERANKER_ONNX_DIR = "/data/onnx/bge-reranker-v2-m3-int8"
+  CORS_ORIGINS = "https://mlsysbook-rag.pages.dev"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2gb"
+
+[mounts]
+  source = "onnx_models"
+  destination = "/data"

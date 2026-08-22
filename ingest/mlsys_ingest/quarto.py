@@ -60,9 +60,15 @@ def chapter_files_from_quarto_config(config_path: Path) -> list[str]:
                 if "file" in it:
                     out.append(it["file"])
 
-    book = cfg.get("book", {})
+    book = cfg.get("book") or {}
     walk(book.get("chapters", []))
     walk(book.get("appendices", []))
+    if not out:
+        # website-style Quarto projects (the real book as of 2026-07) list reading order in project.render
+        render = (cfg.get("project") or {}).get("render") or []
+        out.extend(
+            r for r in render if isinstance(r, str) and r.endswith(".qmd") and not r.startswith("!")
+        )
     return out
 
 

@@ -1,0 +1,32 @@
+# CPU mode in-cluster (spec §5.8); the bulk index is a batch job that borrows the GPU when vLLM is down.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: embedder
+  namespace: mlsysbook
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: embedder}
+  template:
+    metadata:
+      labels: {app: embedder}
+      annotations: {prometheus.io/scrape: "true", prometheus.io/port: "8001"}
+    spec:
+      containers:
+        - name: embedder
+          image: mlsysbook-rag/embedder:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - {name: EMBEDDER_MODE, value: cpu}
+            - {name: HF_HOME, value: /data/hf-cache}
+          ports: [{containerPort: 8001}]
+          resources:
+            requests: {cpu: "2", memory: 3Gi}
+            limits: {cpu: "4", memory: 6Gi}
+          volumeMounts: [{name: hf-cache, mountPath: /data/hf-cache}]
+          startupProbe: {httpGet: {path: /health, port: 8001}, periodSeconds: 10, failureThreshold: 30}
+          readinessProbe: {httpGet: {path: /health, port: 8001}, periodSeconds: 10}
+      volumes:
+        - name: hf-cache
+          hostPath: {path: /var/lib/mlsysbook/hf-cache, type: DirectoryOrCreate}

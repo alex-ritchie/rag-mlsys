@@ -1,0 +1,16 @@
+{
+  "run_id": "not-yet-run",
+  "created_at": "2026-08-21T00:00:00Z",
+  "git_sha": "unknown",
+  "index_commit_sha": null,
+  "model": "qwen38-27b-w4a16",
+  "prompt_version": "v1",
+  "judge_model": "claude-haiku-4-5",
+  "golden_count": 0,
+  "golden_by_type": {"single": 0, "multi": 0, "unanswerable": 0},
+  "retrieval": [],
+  "generation": null,
+  "judge_agreement": null,
+  "per_question": [],
+  "config": {}
+}

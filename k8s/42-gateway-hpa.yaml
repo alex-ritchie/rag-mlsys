@@ -1,0 +1,22 @@
+# HPA on the stateless CPU tier only (spec §5.8). Backed by k3s' bundled metrics-server.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gateway
+  namespace: mlsysbook
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: gateway}
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: {type: Utilization, averageUtilization: 70}
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies: [{type: Pods, value: 2, periodSeconds: 15}]
+    scaleDown:
+      stabilizationWindowSeconds: 60   # short so the 1->4->1 demo completes in minutes
+      policies: [{type: Pods, value: 1, periodSeconds: 30}]

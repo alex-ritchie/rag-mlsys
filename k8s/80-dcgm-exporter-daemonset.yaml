@@ -1,0 +1,23 @@
+# GPU util / VRAM / power (spec §5.8). One pod per GPU node (a single node here).
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dcgm-exporter
+  namespace: mlsysbook
+spec:
+  selector:
+    matchLabels: {app: dcgm-exporter}
+  template:
+    metadata:
+      labels: {app: dcgm-exporter}
+    spec:
+      runtimeClassName: nvidia
+      containers:
+        - name: dcgm-exporter
+          image: nvcr.io/nvidia/k8s/dcgm-exporter:3.3.9-3.6.1-ubuntu22.04
+          ports: [{containerPort: 9400, name: metrics}]
+          securityContext: {capabilities: {add: [SYS_ADMIN]}}
+          env: [{name: DCGM_EXPORTER_KUBERNETES, value: "true"}]
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {memory: 512Mi}

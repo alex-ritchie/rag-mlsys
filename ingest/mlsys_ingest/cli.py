@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 from collections import Counter
+from typing import Any
 
 import typer
 from mlsys_common.db import make_engine, migrate
@@ -38,7 +39,7 @@ def dry_run(
     parsed = parse_corpus(cfg, checkout)
     counter = get_counter(None if approx else cfg.chunking.tokenizer)
     chunks = chunk_corpus(cfg, parsed, counter)
-    stats = chunk_stats(chunks)
+    stats: dict[str, Any] = dict(chunk_stats(chunks))
     stats["under_min"] = sum(c.token_count < cfg.chunking.min_tokens for c in chunks)
     stats["tokenizer"] = counter.name
     stats["chapters"] = len(parsed)

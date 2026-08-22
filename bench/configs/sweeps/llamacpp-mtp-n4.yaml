@@ -1,0 +1,10 @@
+# llama.cpp MTP draft-depth sweep: start llama-server with --spec-draft-n-max 4 (0 = no speculation), --parallel 1.
+name: sweep-llamacpp-mtp-n4
+target: openai
+base_url: http://localhost:8003/v1
+model: qwen38-27b-gguf-ud-q4km
+serving_config: config/serving/llamacpp-qwen38-27b.yaml
+lever: "spec-draft-n-max=4"
+max_tokens: 512
+concurrency: [1, 4]
+requests_per_level: 24

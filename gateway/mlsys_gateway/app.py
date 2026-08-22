@@ -14,14 +14,14 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from mlsys_common.db import make_engine
 from mlsys_common.models import AskRequest, Usage
 from mlsys_common.settings import REPO_ROOT, Settings, get_settings
-from mlsys_embedder.client import HttpEmbedder, InProcessEmbedder
-from mlsys_reranker.client import HttpReranker, InProcessReranker
+from mlsys_embedder.client import Embedder, HttpEmbedder, InProcessEmbedder
+from mlsys_reranker.client import HttpReranker, InProcessReranker, Reranker
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sse_starlette.sse import EventSourceResponse
 
 from mlsys_gateway import metrics as M
 from mlsys_gateway.demo import DemoGuard, DemoLimitError
-from mlsys_gateway.llm import AnthropicLLM, FakeLLM, OpenAICompatLLM
+from mlsys_gateway.llm import LLM, AnthropicLLM, FakeLLM, OpenAICompatLLM
 from mlsys_gateway.openai_shim import ChatCompletionRequest, complete_chat, stream_chat
 from mlsys_gateway.pipeline import Deps, ask
 from mlsys_gateway.retrieval import coverage, get_chunk
@@ -34,6 +34,9 @@ EVAL_REPORT_PATH = Path(
 def build_deps(s: Settings) -> Deps:
     engine = make_engine(s.effective_database_url, pool_size=10, max_overflow=20)
     http = httpx.AsyncClient(timeout=60.0)
+    embedder: Embedder
+    reranker: Reranker | None
+    llm: LLM
     if s.profile == "demo":
         from mlsys_embedder.backends import OnnxBackend
         from mlsys_reranker.backends import OnnxRerankBackend

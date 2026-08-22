@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-provider
+  namespace: mlsysbook
+data:
+  dashboards.yml: |
+    apiVersion: 1
+    providers:
+      - {name: mlsysbook, folder: "MLSysBook RAG", type: file, options: {path: /var/lib/grafana/dashboards}}

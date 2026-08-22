@@ -1,0 +1,31 @@
+# Nightly groundedness judge (spec §5.8): samples answers from query_log, writes judge_scores;
+# the gateway's /metrics exposes the result as rag_nightly_groundedness (no pushgateway).
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: drift-judge
+  namespace: mlsysbook
+spec:
+  schedule: "15 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: judge
+              image: mlsysbook-rag/gateway:latest
+              imagePullPolicy: IfNotPresent
+              command: ["python", "-m", "mlsys_eval.drift", "--n", "50"]
+              envFrom:
+                - configMapRef: {name: mlsys-config}
+              env:
+                - name: ANTHROPIC_API_KEY
+                  valueFrom: {secretKeyRef: {name: mlsys-secrets, key: ANTHROPIC_API_KEY, optional: true}}
+              resources:
+                requests: {cpu: 100m, memory: 256Mi}
+                limits: {memory: 512Mi}

@@ -6,9 +6,14 @@ import json
 import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol, cast
 
 import httpx
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from anthropic.types import MessageParam
 from mlsys_common.models import Usage
 
 
@@ -109,7 +114,10 @@ class AnthropicLLM:
         system = "\n".join(m["content"] for m in messages if m["role"] == "system")
         msgs = [m for m in messages if m["role"] != "system"]
         async with self._c.messages.stream(
-            model=self.model, system=system, messages=msgs, max_tokens=max_tokens, temperature=0.2
+            model=self.model,
+            system=system,
+            messages=cast("Iterable[MessageParam]", msgs),
+            max_tokens=max_tokens,
         ) as s:
             async for tok in s.text_stream:
                 yield StreamEvent("token", tok)

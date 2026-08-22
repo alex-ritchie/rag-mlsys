@@ -1,0 +1,41 @@
+# Generated from k8s/prometheus/alert-rules.yml by scripts/sync_k8s_configmaps.py — edit the source file.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: mlsysbook
+data:
+  alert-rules.yml: |
+    # Alert rules (spec §5.9). They exist to be demonstrable; thresholds are deliberately conservative.
+    groups:
+      - name: mlsysbook-quality
+        rules:
+          - alert: GroundednessBelowThreshold
+            expr: rag_nightly_groundedness < 0.8 and rag_judged_answers_7d > 0
+            for: 10m
+            labels: {severity: warning, layer: quality}
+            annotations: {summary: "Nightly groundedness {{ $value | humanizePercentage }} below 80%"}
+          - alert: RetrievalScoreDrift
+            expr: rag_retrieval_score_p50 < 0 and rag_queries_24h > 20
+            for: 30m
+            labels: {severity: warning, layer: quality}
+            annotations: {summary: "p50 rerank score dropped below 0 — retrieval drift?"}
+      - name: mlsysbook-serving
+        rules:
+          - alert: P99LatencyAboveSLO
+            expr: histogram_quantile(0.99, sum(rate(rag_e2e_seconds_bucket[5m])) by (le)) > 30
+            for: 5m
+            labels: {severity: warning, layer: serving}
+            annotations: {summary: "Gateway p99 end-to-end latency above the 30 s SLO"}
+          - alert: GatewayErrorRate
+            expr: sum(rate(rag_requests_total{status="error"}[5m])) / sum(rate(rag_requests_total[5m])) > 0.05
+            for: 5m
+            labels: {severity: critical, layer: serving}
+            annotations: {summary: "Gateway error rate above 5%"}
+      - name: mlsysbook-infra
+        rules:
+          - alert: GPUMemoryNearCeiling
+            expr: DCGM_FI_DEV_FB_USED / (DCGM_FI_DEV_FB_USED + DCGM_FI_DEV_FB_FREE) > 0.97
+            for: 5m
+            labels: {severity: warning, layer: infra}
+            annotations: {summary: "GPU framebuffer above 97% — OOM risk"}

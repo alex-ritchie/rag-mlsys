@@ -1,0 +1,22 @@
+# Traefik is bundled with k3s. Everything is served from one host; the frontend's nginx proxies /api.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mlsysbook
+  namespace: mlsysbook
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+    - host: mlsysbook.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: {service: {name: frontend, port: {number: 80}}}
+    - host: grafana.mlsysbook.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: {service: {name: grafana, port: {number: 3000}}}

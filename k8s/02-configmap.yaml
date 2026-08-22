@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mlsys-config
+  namespace: mlsysbook
+data:
+  PROFILE: local
+  DATABASE_URL: postgresql+asyncpg://mlsys:mlsys@postgres:5432/mlsys
+  EMBEDDER_URL: http://embedder:8001
+  RERANKER_URL: http://reranker:8002
+  LLM_BASE_URL: http://vllm:8003/v1
+  LLM_MODEL: qwen38-27b-w4a16
+  RETRIEVAL_MODE: hybrid
+  RETRIEVAL_TOP_N: "30"
+  RERANK_TOP_K: "5"
+  PROMPT_VERSION: v1
+  DISABLE_THINKING: "true"
+  HF_HOME: /data/hf-cache

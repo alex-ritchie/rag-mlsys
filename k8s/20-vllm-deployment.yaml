@@ -1,0 +1,57 @@
+# The GPU tier: one replica by design (see docs/writeups/scaling.md). Recreate strategy because two
+# copies cannot share the single GPU; a generous startup probe because model load takes minutes.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm
+  namespace: mlsysbook
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: vllm}
+  template:
+    metadata:
+      labels: {app: vllm}
+      annotations: {prometheus.io/scrape: "true", prometheus.io/port: "8003"}
+    spec:
+      runtimeClassName: nvidia
+      containers:
+        - name: vllm
+          image: vllm/vllm-openai:latest   # pin the exact tag once M3 passes (spec §5.4)
+          args:
+            - --model=dbirks/Qwen3.8-27B-W4A16-AutoRound
+            - --served-model-name=qwen38-27b-w4a16
+            - --port=8003
+            - --max-model-len=32768
+            - --gpu-memory-utilization=0.90
+            - --enable-prefix-caching
+            - --reasoning-parser=qwen3
+            - --language-model-only
+            - --max-num-seqs=32
+          env:
+            - {name: HF_HOME, value: /data/hf-cache}
+            - {name: VLLM_USE_V1, value: "1"}
+          ports: [{containerPort: 8003}]
+          resources:
+            limits: {nvidia.com/gpu: 1, memory: 48Gi}
+            requests: {cpu: "2", memory: 16Gi}
+          volumeMounts:
+            - {name: hf-cache, mountPath: /data/hf-cache}
+            - {name: shm, mountPath: /dev/shm}
+          startupProbe:
+            httpGet: {path: /health, port: 8003}
+            periodSeconds: 10
+            failureThreshold: 90        # up to 15 min for first download + load
+          readinessProbe:
+            httpGet: {path: /health, port: 8003}
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /health, port: 8003}
+            periodSeconds: 30
+            failureThreshold: 6
+      volumes:
+        - name: hf-cache
+          hostPath: {path: /var/lib/mlsysbook/hf-cache, type: DirectoryOrCreate}
+        - name: shm
+          emptyDir: {medium: Memory, sizeLimit: 8Gi}

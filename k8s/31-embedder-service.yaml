@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: embedder
+  namespace: mlsysbook
+  labels: {app: embedder}
+spec:
+  selector: {app: embedder}
+  ports: [{name: http, port: 8001, targetPort: 8001}]

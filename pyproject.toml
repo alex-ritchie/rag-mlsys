@@ -26,7 +26,15 @@ package = false
 [tool.uv.workspace]
 members = ["common", "ingest", "embedder", "reranker", "gateway", "eval", "bench"]
 
+[[tool.uv.index]]
+# Driver 575.x on the workstation => CUDA 12.9 runtime max; default PyPI torch wheels target CUDA 13.
+# Pin the cu128 wheel index (docs/DEVIATIONS.md #1).
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
 [tool.uv.sources]
+torch = { index = "pytorch-cu128" }
 mlsys-common = { workspace = true }
 mlsys-ingest = { workspace = true }
 mlsys-embedder = { workspace = true }

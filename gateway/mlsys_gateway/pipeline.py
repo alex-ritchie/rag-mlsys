@@ -61,7 +61,14 @@ def to_citations(chunks: list[RetrievedChunk]) -> list[Citation]:
 
 
 async def retrieve_and_rerank(
-    deps: Deps, question: str, *, mode: str, top_n: int, top_k: int, lat: LatencyBreakdown
+    deps: Deps,
+    question: str,
+    *,
+    mode: str,
+    top_n: int,
+    top_k: int,
+    lat: LatencyBreakdown,
+    rerank: bool = True,
 ) -> tuple[list[RetrievedChunk], list[RetrievedChunk]]:
     """Shared by /api/ask, the shim, and the eval harness. Returns (fused top-N, reranked top-K)."""
     t0 = now_ms()
@@ -75,7 +82,7 @@ async def retrieve_and_rerank(
     M.STAGE_SECONDS.labels("retrieve").observe(lat.retrieve_ms / 1000)
 
     t2 = now_ms()
-    if deps.reranker is not None and fused:
+    if rerank and deps.reranker is not None and fused:
         results = await deps.reranker.rerank(question, [c.text for c in fused], top_k)
         reranked = []
         for r in results:

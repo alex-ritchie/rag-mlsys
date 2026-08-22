@@ -113,11 +113,11 @@ compose-down: ## docker compose down
 images: ## Build all images tagged with the git SHA
 	./docker/build.sh
 
-k8s-apply: ## kubectl apply -f k8s/ (plain manifests, numbered)
-	kubectl apply -f k8s/
+k8s-apply: ## kubectl apply -f k8s/<numbered manifests> (plain manifests; k8s/_index-job.yaml is a one-shot run separately)
+	kubectl apply $(foreach f,$(wildcard k8s/[0-9]*.yaml),-f $(f))
 
 k8s-delete: ## Tear down the k8s stack
-	kubectl delete -f k8s/ --ignore-not-found
+	kubectl delete $(foreach f,$(wildcard k8s/[0-9]*.yaml),-f $(f)) --ignore-not-found
 
 hpa-demo: ## Drive the gateway HPA 1->4->1 with a load test and capture kubectl get hpa -w
 	./scripts/hpa_demo.sh

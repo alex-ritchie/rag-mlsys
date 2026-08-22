@@ -1,0 +1,11 @@
+# M3 acceptance: sustained generation at concurrency 8 for 10 minutes without OOM.
+name: m3-soak-c8-10min
+target: openai
+base_url: http://localhost:8003/v1
+model: qwen38-27b-w4a16
+serving_config: config/serving/vllm-qwen38-27b.yaml
+max_tokens: 512
+extra_body:
+  chat_template_kwargs: {enable_thinking: false}
+concurrency: [8]
+duration_s: 600

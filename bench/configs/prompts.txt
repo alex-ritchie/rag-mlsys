@@ -1,0 +1,17 @@
+# Benchmark questions (no book text). One per line; cycled round-robin by the load generator.
+What is the difference between Software 1.0 and Software 2.0?
+How does INT8 quantization change memory footprint and what does it cost in accuracy?
+Explain the roofline model and arithmetic intensity.
+Compare structured and unstructured pruning.
+What is knowledge distillation and when is it used?
+How do data parallelism and model parallelism differ?
+State the iron law of processor performance and its ML analogue.
+Why is the KV cache a bottleneck for LLM inference?
+What does MLPerf measure and why does it matter?
+What causes silent data corruption in large ML fleets?
+How does gradient checkpointing trade compute for memory?
+What is the role of a collective communication library in distributed training?
+What failure modes does a feature store help prevent?
+How should latency SLOs shape a model serving architecture?
+What are the sustainability trade-offs in training very large models?
+How do edge deployments differ from data-center deployments?

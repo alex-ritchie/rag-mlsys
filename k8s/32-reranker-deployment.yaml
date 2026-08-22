@@ -1,0 +1,34 @@
+# Placement (GPU vs CPU) is the M3 decision (spec §5.4). Default below: CPU. To move it to the GPU,
+# switch the image tag to the -gpu build, set RERANKER_MODE=gpu, and add nvidia.com/gpu to limits
+# — only if the measured VRAM budget allows it alongside vLLM.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reranker
+  namespace: mlsysbook
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: reranker}
+  template:
+    metadata:
+      labels: {app: reranker}
+      annotations: {prometheus.io/scrape: "true", prometheus.io/port: "8002"}
+    spec:
+      containers:
+        - name: reranker
+          image: mlsysbook-rag/reranker:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - {name: RERANKER_MODE, value: cpu}
+            - {name: HF_HOME, value: /data/hf-cache}
+          ports: [{containerPort: 8002}]
+          resources:
+            requests: {cpu: "2", memory: 3Gi}
+            limits: {cpu: "6", memory: 6Gi}
+          volumeMounts: [{name: hf-cache, mountPath: /data/hf-cache}]
+          startupProbe: {httpGet: {path: /health, port: 8002}, periodSeconds: 10, failureThreshold: 30}
+          readinessProbe: {httpGet: {path: /health, port: 8002}, periodSeconds: 10}
+      volumes:
+        - name: hf-cache
+          hostPath: {path: /var/lib/mlsysbook/hf-cache, type: DirectoryOrCreate}

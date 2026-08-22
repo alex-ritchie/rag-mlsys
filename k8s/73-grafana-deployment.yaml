@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: mlsysbook
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: grafana}
+  template:
+    metadata:
+      labels: {app: grafana}
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:11.3.0
+          env:
+            - {name: GF_SECURITY_ADMIN_PASSWORD, value: admin}
+            - {name: GF_AUTH_ANONYMOUS_ENABLED, value: "true"}
+          ports: [{containerPort: 3000}]
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {memory: 512Mi}
+          volumeMounts:
+            - {name: datasources, mountPath: /etc/grafana/provisioning/datasources}
+            - {name: provider, mountPath: /etc/grafana/provisioning/dashboards}
+            - {name: dashboards, mountPath: /var/lib/grafana/dashboards}
+      volumes:
+        - name: datasources
+          configMap: {name: grafana-datasources}
+        - name: provider
+          configMap: {name: grafana-dashboard-provider}
+        - name: dashboards
+          configMap: {name: grafana-dashboards}

@@ -1,0 +1,10 @@
+# llama.cpp KV cache type sweep: --cache-type-k q4_0 --cache-type-v q4_0 vs f16 default.
+name: sweep-llamacpp-kv-q4_0
+target: openai
+base_url: http://localhost:8003/v1
+model: qwen38-27b-gguf-ud-q4km
+serving_config: config/serving/llamacpp-qwen38-27b.yaml
+lever: "cache-type-k=q4_0,cache-type-v=q4_0"
+max_tokens: 512
+concurrency: [1, 4]
+requests_per_level: 24

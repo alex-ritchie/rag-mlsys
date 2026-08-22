@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reranker
+  namespace: mlsysbook
+  labels: {app: reranker}
+spec:
+  selector: {app: reranker}
+  ports: [{name: http, port: 8002, targetPort: 8002}]

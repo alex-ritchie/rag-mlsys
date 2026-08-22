@@ -1,0 +1,38 @@
+# Stateful, single replica, never scaled (spec §5.8).
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: mlsysbook
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels: {app: postgres}
+  template:
+    metadata:
+      labels: {app: postgres}
+    spec:
+      containers:
+        - name: postgres
+          image: pgvector/pgvector:pg16
+          ports: [{containerPort: 5432}]
+          env:
+            - {name: POSTGRES_USER, value: mlsys}
+            - {name: POSTGRES_DB, value: mlsys}
+            - name: POSTGRES_PASSWORD
+              valueFrom: {secretKeyRef: {name: mlsys-secrets, key: POSTGRES_PASSWORD}}
+            - {name: PGDATA, value: /var/lib/postgresql/data/pgdata}
+          volumeMounts: [{name: data, mountPath: /var/lib/postgresql/data}]
+          resources:
+            requests: {cpu: 500m, memory: 1Gi}
+            limits: {memory: 4Gi}
+          readinessProbe:
+            exec: {command: [pg_isready, -U, mlsys]}
+            periodSeconds: 5
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec:
+        accessModes: [ReadWriteOnce]
+        storageClassName: local-path
+        resources: {requests: {storage: 20Gi}}
