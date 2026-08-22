@@ -143,4 +143,5 @@ provisioned from `k8s/grafana/dashboards/*.json`.
 - `RuntimeError: The NVIDIA driver on your system is too old` → you have a CUDA-13 torch wheel; `make setup-models` uses the cu128 index (DEVIATIONS #1).
 - `relation "chunks" does not exist` → `make db-migrate`.
 - `golden set has not been human-verified` → by design; run `make golden-verify`.
+- Hugging Face downloads crawl at ~0 MB/s with `xet` "connection struggling" messages in `data/hf-cache/xet/logs/` → set `HF_HUB_DISABLE_XET=1` (plain HTTPS; what `scripts/serve_vllm.py` and `make up` export by default).
 - Demo returns 429 → per-IP limit or daily budget hit; both are `.env` settings.

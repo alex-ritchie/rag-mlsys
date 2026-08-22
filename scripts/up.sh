@@ -15,6 +15,7 @@ ROOT=$PWD
 LOGS=$ROOT/data/logs; mkdir -p "$LOGS"
 export PATH="$HOME/.local/opt/node/bin:$PATH"
 export HF_HOME="${HF_HOME:-$ROOT/data/hf-cache}"
+export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 # models are cached after the first run; skip the hub round-trip (which can stall on a slow connection)
 [[ -d "$HF_HOME/hub/models--BAAI--bge-m3" && -d "$HF_HOME/hub/models--BAAI--bge-reranker-v2-m3" ]] && export HF_HUB_OFFLINE="${HF_HUB_OFFLINE:-1}"
 
