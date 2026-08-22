@@ -1,5 +1,5 @@
 name: vllm-direct-qwen38-27b
-target: openai                       # engine-isolated: vLLM's own OpenAI endpoint
+target: llm-only                     # LLM only: vLLM's OpenAI endpoint, plain prompts, no retrieval
 base_url: http://localhost:8003/v1
 model: qwen38-27b-w4a16
 serving_config: config/serving/vllm-qwen38-27b.yaml

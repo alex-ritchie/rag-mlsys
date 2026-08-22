@@ -10,8 +10,9 @@ No number in this document is typed by hand.*
 - **Hardware:** RTX 3090 Ti 24 GB (Ampere, sm_86), Ryzen 9 7900X3D, 96 GB RAM, driver 575 (CUDA 12.9).
 - **Workload:** 16 textbook questions (`bench/configs/prompts.txt`), cycled round-robin, closed-loop
   load at concurrency ∈ {1, 4, 8, 16, 32}, 48 requests per level after 2 warm-ups. Two targets:
-  end-to-end through the gateway (`target: gateway`) and engine-isolated (`target: openai` against vLLM
-  directly, same prompts, thinking off).
+  **rag-e2e** — the full pipeline through the gateway (embed → retrieve → rerank → generate), and
+  **llm-only** — vLLM's endpoint with plain prompts and no retrieval (same questions, thinking off), which
+  isolates the model/engine from the pipeline.
 - **Metrics:** TTFT p50/p99, total latency p50/p99, output tokens/s, requests/s, per-stage p50 from
   the gateway's `latency_breakdown`. Every result JSON embeds the serving config, git SHA, GPU, and the
   server's self-reported model/version.
@@ -25,7 +26,7 @@ Each pairwise comparison varies exactly one factor. Serving columns are measured
 2026-08-22, full tables in [ablation-serving.md](../benchmarks/ablation-serving.md)); quality columns wait on the
 verified golden set. "Own best" means each model runs at the configuration its VRAM allows, not the 27B's.
 
-| Cell | Varies vs. primary | Weights | KV cache (tokens) | Placement | Direct tok/s @c1 / @c8 / peak | Gateway TTFT p50 @c1 / @c8 | Quality |
+| Cell | Varies vs. primary | Weights | KV cache (tokens) | Placement | LLM-only tok/s @c1 / @c8 / peak | RAG-e2e TTFT p50 @c1 / @c8 | Quality |
 |---|---|---|---|---|---|---|---|
 | Qwen3.8-27B W4A16 / vLLM, 16K, util 0.90 | — (primary) | 16.6 GiB | 3.8 GiB (47.9K) | emb CPU, rerank GPU@512 | 51 / 352 / **593 @c16** | 2.3 s / **fails @c4** (vLLM OOM with the co-resident reranker) | _pending_ |
 | Qwen3.8-27B W4A16, 8K, util 0.88, seqs 24 | co-residency variant A | 16.6 GiB | 1.27 GiB (12.5K) | emb CPU, rerank GPU@512 | 51 / 275 / 275 @c8 (KV-bound) | 2.2 s / 26 s (queueing, **0 errors**, peak 23.2 GB) | _pending_ |
@@ -48,7 +49,7 @@ verified golden set. "Own best" means each model runs at the configuration its V
    KV blocks); the 9B W4A16, with 4× the KV budget, keeps climbing to **1,508 tok/s @c32** with p99 TTFT of 215 ms.
    The 9B BF16 sits between (917 @c32) — same bytes per token as the 27B but a 4× smaller KV footprint per token,
    so more sequences fit.
-3. **The KV budget, not the weights, decides what the gateway can serve.** Through the full pipeline the 9B W4A16
+3. **The KV budget, not the weights, decides what the gateway can serve.** Through the full RAG pipeline (rag-e2e) the 9B W4A16
    holds TTFT under 1 s at c8; the 27B cannot complete c4 because co-residency with the reranker leaves vLLM no slack
    (`Tried to allocate 66 MiB … 26 MiB free`). Variant A (8K context, util 0.88) buys that slack and is **stable
    under every load level with zero errors**, but at the price of a 1.27 GiB KV cache (12.5K tokens ≈ 3 RAG

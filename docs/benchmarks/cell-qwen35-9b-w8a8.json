@@ -30,7 +30,15 @@
   "oom_or_cuda_errors": 64,
   "gateway_500s": 0,
   "vllm_alive_after": true,
-  "engine_direct": [
+  "bench_files": [
+    "bench/results/20260822T142127Z-cell-qwen35-9b-w8a8-direct.json",
+    "bench/results/20260822T142506Z-cell-qwen35-9b-w8a8-gateway.json"
+  ],
+  "vllm_version": {
+    "version": "0.27.1"
+  },
+  "note": "Reranker(1024) + GPU embedder + vLLM(util 0.85) over-subscribed the card under gateway load: 57 reranker OOM events, all caught (0 gateway 500s), but c8/c16 mostly ran without reranking.",
+  "llm_only": [
     {
       "concurrency": 1,
       "requests": 48,
@@ -132,7 +140,7 @@
       "error_samples": []
     }
   ],
-  "gateway_e2e": [
+  "rag_e2e": [
     {
       "concurrency": 1,
       "requests": 32,
@@ -243,13 +251,5 @@
       "error_samples": [],
       "note": "rerank stage p50 < 100 ms => reranker OOMed and the gateway fell back to the fused order for most requests (57 OOM events in reranker.log); throughput/TTFT at this level are effectively no-rerank numbers"
     }
-  ],
-  "bench_files": [
-    "bench/results/20260822T142127Z-cell-qwen35-9b-w8a8-direct.json",
-    "bench/results/20260822T142506Z-cell-qwen35-9b-w8a8-gateway.json"
-  ],
-  "vllm_version": {
-    "version": "0.27.1"
-  },
-  "note": "Reranker(1024) + GPU embedder + vLLM(util 0.85) over-subscribed the card under gateway load: 57 reranker OOM events, all caught (0 gateway 500s), but c8/c16 mostly ran without reranking."
+  ]
 }

@@ -1,0 +1,11 @@
+{
+  "golden_sha256": "dcc6842dc4ae68e385c2672f9e9457d5913c8e5f8f1a449f03670ad0ebb6684c",
+  "count": 1,
+  "by_type": {
+    "single": 1,
+    "multi": 0,
+    "unanswerable": 0
+  },
+  "verified_at": "2026-08-22T16:32:52.278531+00:00",
+  "verifier": "owner"
+}

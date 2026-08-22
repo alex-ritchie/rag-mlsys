@@ -26,8 +26,15 @@ def write_cell(
 ) -> Path:
     sp = REPO_ROOT / "data" / "logs" / f"cell-{tag}"
     vllm_log = (sp / "vllm.log").read_text(errors="replace") if (sp / "vllm.log").exists() else ""
-    direct = sorted(glob.glob(str(REPO_ROOT / "bench" / "results" / f"*cell-{tag}-direct*.json")))
-    gateway = sorted(glob.glob(str(REPO_ROOT / "bench" / "results" / f"*cell-{tag}-gateway*.json")))
+    res = REPO_ROOT / "bench" / "results"
+    direct = sorted(
+        glob.glob(str(res / f"*cell-{tag}-llm-only*.json"))
+        + glob.glob(str(res / f"*cell-{tag}-direct*.json"))
+    )
+    gateway = sorted(
+        glob.glob(str(res / f"*cell-{tag}-rag-e2e*.json"))
+        + glob.glob(str(res / f"*cell-{tag}-gateway*.json"))
+    )
     d = json.loads(Path(direct[-1]).read_text()) if direct else {"runs": []}
     g = json.loads(Path(gateway[-1]).read_text()) if gateway else {"runs": []}
     errs = 0
@@ -64,8 +71,8 @@ def write_cell(
         "oom_or_cuda_errors": errs,
         "gateway_500s": g500,
         "vllm_alive_after": vram.get("alive"),
-        "engine_direct": d["runs"],
-        "gateway_e2e": g["runs"],
+        "llm_only": d["runs"],
+        "rag_e2e": g["runs"],
         "bench_files": [
             Path(p).relative_to(REPO_ROOT).as_posix() for p in (direct[-1:] + gateway[-1:])
         ],

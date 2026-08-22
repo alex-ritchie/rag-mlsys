@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # One serving-ablation cell (spec §5.7): start vLLM from a serving config, record VRAM/KV, smoke, then
-#   (a) engine-direct load at concurrency {1,4,8,16,32}  (b) end-to-end through the gateway with the
-# embedder and reranker placed per the cell's config. Writes docs/benchmarks/cell-<tag>.json.
+#   (a) llm-only load at concurrency {1,4,8,16,32}: vLLM's endpoint, plain prompts, no retrieval
+#   (b) rag-e2e load through the gateway (embed -> retrieve -> rerank -> generate) with the embedder and
+#       reranker placed per the cell's config.
+# Writes docs/benchmarks/cell-<tag>.json.
 #
 #   ./scripts/ablation_cell.sh config/serving/vllm-qwen35-9b.yaml qwen35-9b-w4a16 [EMBEDDER_MODE=gpu RERANKER_MODE=gpu RERANKER_MAX_LENGTH=1024]
 set -euo pipefail
@@ -28,10 +30,10 @@ echo "   up ${LOAD_S}s | $WEIGHTS | $KV | $KVTOK | $CONC | vram $V_LLM MiB"
 
 echo "== smoke"; curl -s localhost:8003/v1/chat/completions -H 'content-type: application/json' -d "{\"model\":\"$MODEL\",\"messages\":[{\"role\":\"user\",\"content\":\"In one sentence, what is a KV cache?\"}],\"max_tokens\":64,\"chat_template_kwargs\":{\"enable_thinking\":false}}" | python3 -c 'import sys,json; d=json.load(sys.stdin); print("   ", d["choices"][0]["message"]["content"][:160].replace("\n"," "), "|", d["usage"]["completion_tokens"], "tok")'
 
-echo "== engine-direct load (c 1/4/8/16/32)"
-cat > "$SP/bench-direct.yaml" <<YAML
-name: cell-$TAG-direct
-target: openai
+echo "== llm-only load (c 1/4/8/16/32)"
+cat > "$SP/bench-llm-only.yaml" <<YAML
+name: cell-$TAG-llm-only
+target: llm-only
 base_url: http://localhost:8003/v1
 model: $MODEL
 serving_config: $CFG
@@ -42,8 +44,7 @@ concurrency: [1, 4, 8, 16, 32]
 requests_per_level: 48
 warmup: 2
 YAML
-uv run python -m mlsys_bench.run "$SP/bench-direct.yaml" | tee "$SP/bench-direct.log" | grep -E "^\s+rps|^-- "
-DIRECT=$(ls -t bench/results/*cell-$TAG-direct*.json | head -1)
+uv run python -m mlsys_bench.run "$SP/bench-llm-only.yaml" | tee "$SP/bench-llm-only.log" | grep -E "^\s+rps|^-- "
 
 echo "== services: embedder=$EMBEDDER_MODE reranker=$RERANKER_MODE($RERANKER_MAX_LENGTH)"
 uv run uvicorn mlsys_embedder.app:app --port 8001 >"$SP/embedder.log" 2>&1 & PIDS+=($!)
@@ -53,10 +54,10 @@ uv run uvicorn mlsys_gateway.app:app --port 8000 >"$SP/gateway.log" 2>&1 & PIDS+
 until curl -sf localhost:8000/api/health >/dev/null; do sleep 1; done
 V_ALL=$(vram); echo "   vram with services: $V_ALL MiB"
 
-echo "== gateway end-to-end load (c 1/4/8/16)"
-cat > "$SP/bench-gateway.yaml" <<YAML
-name: cell-$TAG-gateway
-target: gateway
+echo "== rag-e2e load (c 1/4/8/16)"
+cat > "$SP/bench-rag-e2e.yaml" <<YAML
+name: cell-$TAG-rag-e2e
+target: rag-e2e
 base_url: http://localhost:8000
 serving_config: $CFG
 concurrency: [1, 4, 8, 16]
@@ -64,9 +65,8 @@ requests_per_level: 32
 warmup: 2
 YAML
 PEAK=$V_ALL; ( while true; do v=$(vram); [[ $v -gt $(cat "$SP/peak" 2>/dev/null || echo 0) ]] && echo $v > "$SP/peak"; sleep 2; done ) & MON=$!; PIDS+=($MON)  # cleanup must kill the monitor too, or `wait` hangs forever
-uv run python -m mlsys_bench.run "$SP/bench-gateway.yaml" | tee "$SP/bench-gateway.log" | grep -E "^\s+rps|^-- "
+uv run python -m mlsys_bench.run "$SP/bench-rag-e2e.yaml" | tee "$SP/bench-rag-e2e.log" | grep -E "^\s+rps|^-- "
 kill $MON 2>/dev/null || true; PEAK=$(cat "$SP/peak" 2>/dev/null || echo $V_ALL)
-GATEWAY=$(ls -t bench/results/*cell-$TAG-gateway*.json | head -1)
 ERR=$(grep -ciE "out of memory|CUDA error" "$SP/vllm.log" "$SP/reranker.log" "$SP/embedder.log" | awk -F: '{s+=$2} END {print s+0}')
 G500=$(grep -c "500 Internal" "$SP/gateway.log" || true)
 curl -sf localhost:8003/health >/dev/null && ALIVE=true || ALIVE=false

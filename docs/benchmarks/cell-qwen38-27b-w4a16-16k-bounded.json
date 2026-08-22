@@ -31,7 +31,14 @@
   "oom_or_cuda_errors": 0,
   "gateway_500s": 0,
   "vllm_alive_after": null,
-  "engine_direct": [
+  "bench_files": [
+    "bench/results/20260822T082450Z-cell-qwen38-27b-w4a16-16k-bounded-direct.json",
+    "bench/results/20260822T083547Z-cell-qwen38-27b-w4a16-16k-bounded-gateway.json"
+  ],
+  "vllm_version": {
+    "version": "0.27.1"
+  },
+  "llm_only": [
     {
       "concurrency": 1,
       "requests": 48,
@@ -133,7 +140,7 @@
       "error_samples": []
     }
   ],
-  "gateway_e2e": [
+  "rag_e2e": [
     {
       "concurrency": 1,
       "requests": 32,
@@ -242,12 +249,5 @@
       },
       "error_samples": []
     }
-  ],
-  "bench_files": [
-    "bench/results/20260822T082450Z-cell-qwen38-27b-w4a16-16k-bounded-direct.json",
-    "bench/results/20260822T083547Z-cell-qwen38-27b-w4a16-16k-bounded-gateway.json"
-  ],
-  "vllm_version": {
-    "version": "0.27.1"
-  }
+  ]
 }

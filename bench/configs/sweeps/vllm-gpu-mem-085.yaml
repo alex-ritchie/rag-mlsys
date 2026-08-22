@@ -1,6 +1,6 @@
 # Lever sweep (spec §5.7): restart vLLM with `scripts/serve_vllm.py config/serving/vllm-qwen38-27b.yaml --set 'gpu-memory-utilization=0.85'` then run this.
 name: sweep-gpu-mem-085
-target: openai
+target: llm-only
 base_url: http://localhost:8003/v1
 model: qwen38-27b-w4a16
 serving_config: config/serving/vllm-qwen38-27b.yaml

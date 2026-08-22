@@ -1,6 +1,6 @@
 # Lever: reasoning on (Qwen3.8 default) vs off (serving default). Affects TTFT heavily.
 name: sweep-reasoning-on
-target: openai
+target: llm-only
 base_url: http://localhost:8003/v1
 model: qwen38-27b-w4a16
 serving_config: config/serving/vllm-qwen38-27b.yaml

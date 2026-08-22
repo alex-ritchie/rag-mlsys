@@ -34,7 +34,7 @@ def render(results: list[dict]) -> str:
         out += [
             f"## {r['name']}",
             "",
-            f"- target: `{cfg.get('target', 'gateway')}` @ `{cfg['base_url']}` · model `{cfg.get('model') or r.get('server', {}).get('health', {}).get('model', '?')}`",
+            f"- target: `{cfg.get('target', 'rag-e2e')}` @ `{cfg['base_url']}` · model `{cfg.get('model') or r.get('server', {}).get('health', {}).get('model', '?')}`",
             f"- code `{r['git_sha'][:10]}` · {r['created_at']} · GPU {r.get('gpu', {}).get('name', '?')}",
         ]
         if r.get("serving_config"):

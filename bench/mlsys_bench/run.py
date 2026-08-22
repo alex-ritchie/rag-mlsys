@@ -47,7 +47,7 @@ async def probe(base_url: str, target: str) -> dict:
     info: dict = {}
     try:
         async with httpx.AsyncClient(timeout=10) as c:
-            if target == "gateway":
+            if target in ("rag-e2e", "gateway"):
                 info["health"] = (await c.get(f"{base_url}/api/health")).json()
             else:
                 info["models"] = (await c.get(f"{base_url}/models")).json()
@@ -67,7 +67,7 @@ async def main_async(cfg_path: Path, out_dir: Path, tag: str | None) -> Path:
         for ln in prompts_file.read_text().splitlines()
         if ln.strip() and not ln.startswith("#")
     ]
-    target = cfg.get("target", "gateway")
+    target = cfg.get("target", "rag-e2e")
     base_url = cfg["base_url"]
     server = await probe(base_url, target)
     runs = []

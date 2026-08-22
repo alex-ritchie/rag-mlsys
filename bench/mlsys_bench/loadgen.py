@@ -1,4 +1,7 @@
-"""Async load generator (spec §5.7): drives the gateway (/api/ask SSE) or an OpenAI endpoint (vLLM directly).
+"""Async load generator (spec §5.7). Two targets:
+  rag-e2e  — the full RAG pipeline through the gateway (/api/ask SSE)
+  llm-only — vLLM's OpenAI endpoint directly, plain prompts, no retrieval
+(`gateway` / `openai` are accepted as legacy aliases.)
 
 Per run: TTFT p50/p99, total latency p50/p99, output tokens/s, requests/s at a fixed concurrency.
 """
@@ -148,7 +151,10 @@ async def run_load(
 
         async def fire(i: int) -> Sample:
             p = prompts[i % len(prompts)]
-            if target == "gateway":
+            if target in (
+                "rag-e2e",
+                "gateway",
+            ):  # full pipeline through the gateway (old name: gateway)
                 return await _one_gateway(client, base_url, p, top_k)
             return await _one_openai(client, base_url, model, p, max_tokens, extra_body or {})
 

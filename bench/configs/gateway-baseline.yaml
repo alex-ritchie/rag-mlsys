@@ -1,5 +1,5 @@
 name: gateway-baseline
-target: gateway                      # end-to-end through the gateway
+target: rag-e2e                      # full RAG pipeline, end to end through the gateway
 base_url: http://localhost:8000
 serving_config: config/serving/vllm-qwen38-27b.yaml
 concurrency: [1, 4, 8, 16, 32]
