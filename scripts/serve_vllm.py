@@ -45,8 +45,9 @@ def build_cmd(cfg: dict) -> list[str]:
             else:
                 cmd += [flag, str(v)]
         return cmd
+    vllm = str(VLLM_BIN) if VLLM_BIN.exists() else "vllm"
     cmd = [
-        "vllm",
+        vllm,
         "serve",
         cfg["model"],
         "--port",
