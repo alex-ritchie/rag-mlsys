@@ -87,8 +87,8 @@ every stage hands its result back to the gateway, which is the only thing that e
     │                       │─────────────────────── 30 pairs ─────────────────────▶│               │
     │                       │◀────────────────── top-5 with scores ─────────────────│               │
     │◀─── citations event ──│                       │               │               │               │
-    │ (the sources are sent before any answer text exists)          │               │               │
-    │                       │ 4. build prompt = system rules + 5 numbered context blocks + question │
+    │ (the sources are sent before the response is generated)       │               │               │
+    │                       │ 4. prompt = system rules + 5 numbered context blocks + question       │
     │                       │──────────────────────────────── prompt ──────────────────────────────▶│
     │                       │◀─────────────────────────── streamed tokens ──────────────────────────│
     │◀─── token, token, … ──│                       │               │               │               │
