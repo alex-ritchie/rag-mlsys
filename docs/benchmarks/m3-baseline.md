@@ -51,6 +51,8 @@ cheapest first:
 
 | 7 | 8K, util 0.88, `--max-num-seqs 24` + GPU reranker@512 (M8 cell) | **stable**: 0 OOMs, peak 23.17 GB, gateway c1–c16 all error-free | KV 1.27 GiB (12,528 tokens, 1.53× at 8K) — the price: direct throughput saturates at 275 tok/s from c8 and gateway TTFT queues to 9.4 s at c4, 26 s at c8. Safe but KV-starved; variant B (16K + bounded prefill) is the next test. |
 
+| 8 | **16K, util 0.90, `--max-num-seqs 24`, `--max-num-batched-tokens 2048`** + GPU reranker@512 (M8 variant B) | **PASS — adopted as the 27B default** | 0 OOMs, peak 23.13 GB, gateway c1–c16 error-free. KV 1.74 GiB (21,845 tokens): direct 352 tok/s sustained from c8; gateway TTFT 2.2 s @c1, **3.1 s @c4**, 20 s @c8 (queueing). Bounding the prefill chunk is what keeps vLLM inside its reserve next to the reranker; the cost is KV (the profiler reserves differently) and therefore concurrency beyond ~4. |
+
 Environment: vLLM 0.27.1 (+cu129 wheel), torch 2.13.0+cu129, transformers 5.15.1, driver 575.57 (CUDA 12.9),
 model `dbirks/Qwen3.8-27B-W4A16-AutoRound` (compressed-tensors pack-quantized, group 128, symmetric int4),
 architecture `Qwen3_5ForConditionalGeneration` (64 layers: full + linear attention), attention block size auto-set to
@@ -88,7 +90,7 @@ reserve is not linear in the utilization fraction.
 | Component | Placement | Status |
 |---|---|---|
 | bge-m3 (query-time) | **CPU** — settled | query-embed p50 71–115 ms, within the ≤100 ms target; not worth VRAM |
-| bge-reranker-v2-m3 | **GPU, co-resident with vLLM** (vLLM util 0.90, 16K context; reranker `max_length` 512) | rung 1 (CPU) measured and rejected: 22.6 s/query (`m2-retrieval.md`); GPU costs 170–470 ms. Util 0.92 left too little headroom (attempt 4); 0.90 survives bursts with ~0.9 GB spare (attempt 5). Cost: context 32K → 16K, which RAG never needs, and ~2.9× instead of ~2× concurrency at the full context. |
+| bge-reranker-v2-m3 | **GPU, co-resident with vLLM** (vLLM util 0.90, 16K context, max-num-seqs 24, prefill chunk 2048; reranker `max_length` 512) | rung 1 (CPU) measured and rejected: 22.6 s/query (`m2-retrieval.md`); GPU costs 170–470 ms. Util 0.92 left too little headroom (attempt 4); 0.90 survives bursts with ~0.9 GB spare (attempt 5). Cost: context 32K → 16K, which RAG never needs, and ~2.9× instead of ~2× concurrency at the full context. |
 
 Bulk indexing borrows the GPU as a batch job while vLLM is down (28 s for the whole corpus). The ladder's ordering
 assumed a CPU reranker is acceptable; measurement says it is 20–80× over budget, so the VRAM for the reranker comes

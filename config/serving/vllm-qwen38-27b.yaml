@@ -9,7 +9,8 @@ args:
   enable-prefix-caching: true
   reasoning-parser: qwen3
   language-model-only: true          # skip the vision tower (flag name per Qwen3.6 recipes; verify at M3)
-  max-num-seqs: 32
+  max-num-seqs: 24                  # M8 variant B: Mamba state blocks + bounded prefill keep vLLM inside its reserve
+  max-num-batched-tokens: 2048      # bound transient prefill activations beside the co-resident reranker
   dtype: auto
   trust-remote-code: true
   # quantization is auto-detected from config.json (compressed-tensors pack-quantized -> Marlin int4 on sm_86)
@@ -20,6 +21,7 @@ env:
 notes: |
   Ampere (sm_86): no FP8/NVFP4 kernels. W4A16 compressed-tensors runs through Marlin.
   M3 (2026-08-22, vLLM 0.27.1+cu129, torch 2.13.0+cu129, transformers 5.15.1): weights 16.84 GiB.
-  Final placement (attempt 5): util 0.90 + 16K context + bge-reranker-v2-m3 fp16 on the same GPU at
-  max_length 512 -> 23.66 GB peak under an 8-way burst, no OOM; rerank 170-470 ms vs 22 s on CPU.
+  Final placement (attempt 5 + M8 variant B): util 0.90 + 16K context + bge-reranker-v2-m3 fp16 on the same
+  GPU at max_length 512, max-num-seqs 24, prefill chunk 2048 -> stable through gateway c1-c16 (0 errors,
+  peak 23.1 GB); rerank 170-370 ms vs 22 s on CPU; KV 1.74 GiB => c4 usable (TTFT 3.1 s), c8+ queues.
   Embedder stays on CPU (71 ms). Full attempt log: docs/benchmarks/m3-baseline.md.

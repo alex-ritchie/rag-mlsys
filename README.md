@@ -12,8 +12,9 @@
 > measured overhead is ~3.7 GB, so the 27B leaves no room for the cross-encoder reranker on the GPU at a 32K context.
 > The spec's fallback (reranker on CPU) was measured and rejected — **22.6 s per query** (fp32) and still 2.7–11 s
 > as int8 ONNX. Trading context length for VRAM (16K) at utilization 0.92 fit the reranker at **261 ms** but OOMed
-> under a generation burst; **utilization 0.90 at 16K with the reranker at `max_length` 512 survives an 8-way burst
-> at 23.66 GB peak** and is now the default (`make up`, compose, serving config). Full attempt log with numbers:
+> under a generation burst; utilization 0.90 at 16K with the reranker at `max_length` 512 survives an 8-way burst but
+> OOMed under 4 concurrent *gateway* requests; **adding `--max-num-seqs 24` and a 2048-token prefill chunk makes it
+> stable at every load level (0 errors, peak 23.1 GB, TTFT 3.1 s at c4)** and that is now the default. Full attempt log with numbers:
 > [docs/benchmarks/m3-baseline.md](docs/benchmarks/m3-baseline.md); CPU-reranker sweep:
 > [docs/benchmarks/m2-retrieval.md](docs/benchmarks/m2-retrieval.md).
 >

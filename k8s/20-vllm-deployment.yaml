@@ -28,7 +28,8 @@ spec:
             - --enable-prefix-caching
             - --reasoning-parser=qwen3
             - --language-model-only
-            - --max-num-seqs=32
+            - --max-num-seqs=24
+            - --max-num-batched-tokens=2048   # M8 variant B: stable beside the GPU reranker
           env:
             - {name: HF_HOME, value: /data/hf-cache}
             - {name: VLLM_USE_V1, value: "1"}

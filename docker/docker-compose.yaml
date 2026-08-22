@@ -58,7 +58,7 @@ services:
     command: >
       --model ${VLLM_MODEL:-dbirks/Qwen3.8-27B-W4A16-AutoRound} --served-model-name qwen38-27b-w4a16
       --port 8003 --max-model-len 16384 --gpu-memory-utilization 0.90 --enable-prefix-caching
-      --reasoning-parser qwen3 --language-model-only --max-num-seqs 32 ${VLLM_EXTRA_ARGS:-}
+      --reasoning-parser qwen3 --language-model-only --max-num-seqs 24 --max-num-batched-tokens 2048 ${VLLM_EXTRA_ARGS:-}
     environment: {HF_HOME: /data/hf-cache, VLLM_USE_V1: "1"}
     volumes: [../data/hf-cache:/data/hf-cache]
     ports: ["8003:8003"]
