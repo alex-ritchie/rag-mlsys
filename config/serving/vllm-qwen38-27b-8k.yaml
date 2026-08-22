@@ -9,7 +9,7 @@ args:
   enable-prefix-caching: true
   reasoning-parser: qwen3
   language-model-only: true          # skip the vision tower (flag name per Qwen3.6 recipes; verify at M3)
-  max-num-seqs: 32
+  max-num-seqs: 24                  # util 0.88 @ 8K leaves 26 Mamba (linear-attention) state blocks; one is needed per decode sequence
   dtype: auto
   trust-remote-code: true
   # quantization is auto-detected from config.json (compressed-tensors pack-quantized -> Marlin int4 on sm_86)

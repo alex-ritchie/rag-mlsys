@@ -47,6 +47,8 @@ cheapest first:
 6. **Smaller LLM cell** (Qwen3.5-9B, ~6 GB): the ablation's natural answer — 32K context, reranker at 1024, GPU
    embedder, more candidates, all at once.
 
+| 6 | **8K context, util 0.88** (co-residency variant for the M8 gateway cell) | refused at first: `max_num_seqs (32) exceeds available Mamba cache blocks (26)` — Qwen3.8's 48 linear-attention layers hold a fixed-size recurrent state per sequence, allocated as "Mamba cache blocks"; the budget left 26 → `--max-num-seqs 24`. | A second, architecture-specific concurrency ceiling next to the KV cache: the hybrid design shrinks per-token KV ~4× but adds a per-*sequence* constant, so max concurrency is bounded by `min(KV tokens / tokens per request, Mamba blocks)`. |
+
 Environment: vLLM 0.27.1 (+cu129 wheel), torch 2.13.0+cu129, transformers 5.15.1, driver 575.57 (CUDA 12.9),
 model `dbirks/Qwen3.8-27B-W4A16-AutoRound` (compressed-tensors pack-quantized, group 128, symmetric int4),
 architecture `Qwen3_5ForConditionalGeneration` (64 layers: full + linear attention), attention block size auto-set to
