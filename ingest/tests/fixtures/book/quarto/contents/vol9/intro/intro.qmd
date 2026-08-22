@@ -1,0 +1,5 @@
+# Fixture Introduction {#sec-fixture-intro}
+
+## Overview {#sec-fixture-overview}
+
+This synthetic chapter exists to exercise chapter numbering. Nothing here is book text.

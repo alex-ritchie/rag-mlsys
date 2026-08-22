@@ -1,0 +1,96 @@
+---
+engine: jupyter
+synthetic: true
+---
+
+# Widget Systems {#sec-widgets}
+
+<!-- This fixture is synthetic test content for the chunker. It is not book text. -->
+
+::: {layout-narrow}
+::: {.column-margin}
+
+\chapterminitoc
+
+:::
+:::
+
+::: {.content-visible when-format="pdf"}
+\noindent
+![](images/pdf_only.png){fig-alt="PDF-only cover art that must be dropped."}
+:::
+
+## Purpose {.unnumbered .unlisted}
+
+_Why do widget systems need their own engineering discipline?_
+
+Widgets move through conveyor hierarchies governed by throughput, and every sprocket has a duty cycle\index{Duty Cycle}. A widget that fits in a warehouse may be useless on a cart. See @sec-widgets-sizing for the sizing rules and @fig-widget-flow for the overall flow.
+
+::: {.callout-learning-objectives}
+
+- Explain widget throughput
+- Apply the sprocket lens
+
+:::
+
+```{python}
+#| echo: false
+HIDDEN_SECRET = "this hidden computation cell must never appear in a chunk"
+```
+
+## Widget Sizing {#sec-widgets-sizing}
+
+A widget's size is the product of its gear count and its tooth pitch. Engineers typically quote `{python} SizingStats.pitch_str` as the reference pitch[^fn-pitch]. The sizing rule was popularised in [@doe2020widgets; @roe2021gears].
+
+[^fn-pitch]: **Tooth pitch**: the distance between adjacent teeth, measured along the pitch circle.
+
+::: {#fig-widget-flow fig-env="figure" fig-pos="htb" fig-cap="**Widget Flow**: Raw stock enters the lathe, becomes a blank, and exits as a finished widget." fig-alt="Three boxes connected by arrows."}
+![](images/widget_flow.png)
+:::
+
+### Sizing Table {#sec-widgets-sizing-table}
+
+| **Class** | **Gears** | **Pitch (mm)** |
+|:----------|----------:|---------------:|
+| Micro     |         2 |            0.5 |
+| Standard  |         8 |            2.0 |
+| Heavy     |        32 |            8.0 |
+
+: **Widget Classes**: Reference classes used throughout this fixture. {#tbl-widget-classes tbl-colwidths="[40,30,30]"}
+
+The sizing identity is
+
+$$ S = G \times P $$ {#eq-sizing}
+
+where $S$ is size, $G$ gear count and $P$ pitch.
+
+### Worked Example {#sec-widgets-example}
+
+::: {#psp-widgets-example .callout-perspective title="Why pitch dominates"}
+
+Doubling pitch doubles size, but doubling gears also doubles weight, so pitch is the cheaper lever.
+
+:::
+
+```python
+def widget_size(gears: int, pitch: float) -> float:
+    return gears * pitch
+```
+
+```{.tikz}
+\node at (0,0) {must be dropped};
+```
+
+## Deployment {#sec-widgets-deployment}
+
+Widgets deploy to carts, shelves, or warehouses. Each target imposes a different duty cycle:
+
+- Carts: intermittent use, battery-limited
+- Shelves: continuous, mains-powered
+- Warehouses: batch, forklift-scheduled
+
+{{< include _synthetic_include.qmd >}}
+
+\newpage
+
+That concludes the fixture chapter.

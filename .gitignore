@@ -6,7 +6,7 @@ data/
 *.pt
 *.onnx
 *.qmd
-!ingest/tests/fixtures/*.qmd
+!ingest/tests/fixtures/**/*.qmd
 
 # eval/bench run outputs (a curated copy of the latest report is committed explicitly)
 eval/results/*

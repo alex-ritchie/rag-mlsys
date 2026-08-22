@@ -1,0 +1,5 @@
+# Glossary {#sec-glossary}
+
+**Widget**: a synthetic thing.
+
+**Gear**: another synthetic thing.
