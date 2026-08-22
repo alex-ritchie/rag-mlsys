@@ -1,0 +1,255 @@
+{
+  "tag": "qwen35-9b-w8a8",
+  "serving_config": "config/serving/vllm-qwen35-9b-w8a8.yaml",
+  "model": "qwen35-9b-w8a8",
+  "serving_args": {
+    "max-model-len": 32768,
+    "gpu-memory-utilization": 0.85,
+    "enable-prefix-caching": true,
+    "reasoning-parser": "qwen3",
+    "language-model-only": true,
+    "max-num-seqs": 32,
+    "dtype": "auto",
+    "trust-remote-code": true
+  },
+  "load_seconds": 90,
+  "weights": "Model loading took 11.87 GiB",
+  "kv": "Available KV cache memory: 5.92 GiB",
+  "kv_tokens": "GPU KV cache size: 174,287 tokens",
+  "max_concurrency_at_full_context": "Maximum concurrency for 32,768 tokens per request: 5.32x",
+  "vram_mib": {
+    "vllm_only": 18931,
+    "with_embedder_reranker": 21732,
+    "peak_gateway_load": 24112
+  },
+  "placement": {
+    "embedder": "gpu",
+    "reranker": "gpu",
+    "reranker_max_length": 1024
+  },
+  "oom_or_cuda_errors": 64,
+  "gateway_500s": 0,
+  "vllm_alive_after": true,
+  "engine_direct": [
+    {
+      "concurrency": 1,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 340.97,
+      "requests_per_s": 0.141,
+      "output_tokens_per_s": 71.2,
+      "ttft_ms": {
+        "p50": 21.8,
+        "p90": 23.0,
+        "p99": 32.6
+      },
+      "total_ms": {
+        "p50": 7191.8,
+        "p90": 7192.9,
+        "p99": 7203.1
+      },
+      "stage_ms_p50": {},
+      "error_samples": []
+    },
+    {
+      "concurrency": 4,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 90.83,
+      "requests_per_s": 0.528,
+      "output_tokens_per_s": 265.4,
+      "ttft_ms": {
+        "p50": 51.5,
+        "p90": 52.7,
+        "p99": 58.7
+      },
+      "total_ms": {
+        "p50": 7573.5,
+        "p90": 7575.4,
+        "p99": 7577.8
+      },
+      "stage_ms_p50": {},
+      "error_samples": []
+    },
+    {
+      "concurrency": 8,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 46.0,
+      "requests_per_s": 1.043,
+      "output_tokens_per_s": 533.4,
+      "ttft_ms": {
+        "p50": 61.8,
+        "p90": 63.5,
+        "p99": 63.9
+      },
+      "total_ms": {
+        "p50": 7672.0,
+        "p90": 7673.1,
+        "p99": 7673.8
+      },
+      "stage_ms_p50": {},
+      "error_samples": []
+    },
+    {
+      "concurrency": 16,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 25.45,
+      "requests_per_s": 1.886,
+      "output_tokens_per_s": 965.8,
+      "ttft_ms": {
+        "p50": 91.5,
+        "p90": 117.7,
+        "p99": 118.0
+      },
+      "total_ms": {
+        "p50": 8476.0,
+        "p90": 8501.4,
+        "p99": 8502.3
+      },
+      "stage_ms_p50": {},
+      "error_samples": []
+    },
+    {
+      "concurrency": 32,
+      "requests": 48,
+      "errors": 0,
+      "wall_s": 18.96,
+      "requests_per_s": 2.531,
+      "output_tokens_per_s": 1296.0,
+      "ttft_ms": {
+        "p50": 98.3,
+        "p90": 169.8,
+        "p99": 170.5
+      },
+      "total_ms": {
+        "p50": 10488.0,
+        "p90": 10505.8,
+        "p99": 10506.5
+      },
+      "stage_ms_p50": {},
+      "error_samples": []
+    }
+  ],
+  "gateway_e2e": [
+    {
+      "concurrency": 1,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 112.95,
+      "requests_per_s": 0.283,
+      "output_tokens_per_s": 60.6,
+      "ttft_ms": {
+        "p50": 363.2,
+        "p90": 672.5,
+        "p99": 715.1
+      },
+      "total_ms": {
+        "p50": 3569.8,
+        "p90": 4669.8,
+        "p99": 5615.3
+      },
+      "stage_ms_p50": {
+        "embed_ms": 9.3,
+        "retrieve_ms": 3.0,
+        "rerank_ms": 261.1,
+        "ttft_ms": 362.4,
+        "generate_ms": 3293.6,
+        "total_ms": 3567.8
+      },
+      "error_samples": []
+    },
+    {
+      "concurrency": 4,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 40.51,
+      "requests_per_s": 0.79,
+      "output_tokens_per_s": 175.1,
+      "ttft_ms": {
+        "p50": 600.1,
+        "p90": 969.4,
+        "p99": 1467.5
+      },
+      "total_ms": {
+        "p50": 5010.9,
+        "p90": 6638.6,
+        "p99": 7881.7
+      },
+      "stage_ms_p50": {
+        "embed_ms": 15.9,
+        "retrieve_ms": 3.1,
+        "rerank_ms": 491.0,
+        "ttft_ms": 599.2,
+        "generate_ms": 4382.3,
+        "total_ms": 4998.8
+      },
+      "error_samples": []
+    },
+    {
+      "concurrency": 8,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 23.16,
+      "requests_per_s": 1.382,
+      "output_tokens_per_s": 309.0,
+      "ttft_ms": {
+        "p50": 451.0,
+        "p90": 3173.1,
+        "p99": 3765.2
+      },
+      "total_ms": {
+        "p50": 4414.8,
+        "p90": 8753.8,
+        "p99": 11097.3
+      },
+      "stage_ms_p50": {
+        "embed_ms": 16.2,
+        "retrieve_ms": 3.1,
+        "rerank_ms": 13.8,
+        "ttft_ms": 450.0,
+        "generate_ms": 4370.4,
+        "total_ms": 4402.7
+      },
+      "error_samples": [],
+      "note": "rerank stage p50 < 100 ms => reranker OOMed and the gateway fell back to the fused order for most requests (57 OOM events in reranker.log); throughput/TTFT at this level are effectively no-rerank numbers"
+    },
+    {
+      "concurrency": 16,
+      "requests": 32,
+      "errors": 0,
+      "wall_s": 10.96,
+      "requests_per_s": 2.919,
+      "output_tokens_per_s": 610.7,
+      "ttft_ms": {
+        "p50": 328.5,
+        "p90": 745.7,
+        "p99": 746.7
+      },
+      "total_ms": {
+        "p50": 4267.7,
+        "p90": 5457.8,
+        "p99": 6694.9
+      },
+      "stage_ms_p50": {
+        "embed_ms": 17.3,
+        "retrieve_ms": 3.0,
+        "rerank_ms": 38.0,
+        "ttft_ms": 320.7,
+        "generate_ms": 4175.3,
+        "total_ms": 4258.8
+      },
+      "error_samples": [],
+      "note": "rerank stage p50 < 100 ms => reranker OOMed and the gateway fell back to the fused order for most requests (57 OOM events in reranker.log); throughput/TTFT at this level are effectively no-rerank numbers"
+    }
+  ],
+  "bench_files": [
+    "bench/results/20260822T142127Z-cell-qwen35-9b-w8a8-direct.json",
+    "bench/results/20260822T142506Z-cell-qwen35-9b-w8a8-gateway.json"
+  ],
+  "vllm_version": {
+    "version": "0.27.1"
+  },
+  "note": "Reranker(1024) + GPU embedder + vLLM(util 0.85) over-subscribed the card under gateway load: 57 reranker OOM events, all caught (0 gateway 500s), but c8/c16 mostly ran without reranking."
+}

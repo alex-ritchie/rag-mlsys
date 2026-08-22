@@ -21,6 +21,7 @@ class Sample:
     output_tokens: int
     error: str = ""
     stage_ms: dict[str, float] = field(default_factory=dict)
+    rerank_fallback: bool = False  # gateway degraded to the fused order because the reranker failed
 
 
 async def _one_gateway(
@@ -30,6 +31,7 @@ async def _one_gateway(
     ttft = None
     tokens = 0
     stages: dict[str, float] = {}
+    fallback = False
     try:
         async with client.stream(
             "POST",
@@ -71,7 +73,14 @@ async def _one_gateway(
         return Sample(
             False, ttft or 0, (time.perf_counter() - t0) * 1000, tokens, f"{type(e).__name__}: {e}"
         )
-    return Sample(True, ttft or 0, (time.perf_counter() - t0) * 1000, tokens, stage_ms=stages)
+    return Sample(
+        True,
+        ttft or 0,
+        (time.perf_counter() - t0) * 1000,
+        tokens,
+        stage_ms=stages,
+        rerank_fallback=fallback,
+    )
 
 
 async def _one_openai(
@@ -195,5 +204,6 @@ def summarize(samples: list[Sample], wall_s: float, concurrency: int) -> dict:
             "p99": round(percentile(tot, 99), 1),
         },
         "stage_ms_p50": {k: round(percentile(v, 50), 1) for k, v in stages.items()},
+        "rerank_fallbacks": sum(s.rerank_fallback for s in ok),
         "error_samples": [s.error for s in samples if not s.ok][:5],
     }

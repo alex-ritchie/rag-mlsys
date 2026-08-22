@@ -32,6 +32,7 @@ verified golden set. "Own best" means each model runs at the configuration its V
 | **Qwen3.8-27B W4A16, 16K, util 0.90, seqs 24, prefill chunk 2048** | co-residency variant B — **adopted default** | 16.6 GiB | 1.74 GiB (21.8K) | emb CPU, rerank GPU@512 | 51 / 352 / 352 @c8 (KV-bound) | 2.2 s / 20 s; **3.1 s @c4**; **0 errors**, peak 23.1 GB | _pending_ |
 | Qwen3.5-9B W4A16 / vLLM, 32K, util 0.80 | size | 9.5 GiB | **6.6 GiB (195.7K)** | emb GPU, rerank GPU@1024 | **95 / 697 / 1,508 @c32** | **0.41 s / 0.97 s** | _pending_ |
 | Qwen3.5-9B BF16 / vLLM, 32K, util 0.90 | quantization (none vs 4-bit) | 16.8 GiB | 2.2 GiB (64.1K) | emb CPU, rerank GPU@1024 | 51 / 386 / 917 @c32 | 1.0 s / 1.9 s | _pending_ |
+| Qwen3.5-9B W8A8 / vLLM, 32K, util 0.85 | quantization (int8 W+A vs 4-bit W) | 11.9 GiB | 5.9 GiB (174.3K) | emb GPU, rerank GPU@1024 | 71 / 533 / 1,296 @c32 | 0.36 s / 0.45 s† | _pending_ |
 | Qwen3.6-35B-A3B W4A16 / vLLM | dense → MoE | | | | _pending_ | | |
 | Qwen3.8-27B UD-Q4_K_M / llama.cpp (+MTP) | engine | | | | _pending_ (single-stream focus) | | |
 
@@ -60,6 +61,16 @@ verified golden set. "Own best" means each model runs at the configuration its V
    goes 263 ms @c1 → 782 ms @c8 → 1.4 s @c16 (queueing behind the serialized cross-encoder), and rerank OOM-recovery
    fired 13 times at that placement (0 failed requests). Cross-request batching and smaller reranker inputs are the
    next levers; the measurement that decides between them is the golden-set recall at `max_length` 512 vs 1024.
+† At gateway c8/c16 the W8A8 cell's reranker OOMed (57 events, all caught) and most requests fell back to the fused
+   order, so those TTFT/throughput figures are effectively *no-rerank* numbers; c1/c4 are genuine. The cell was
+   over-subscribed (util 0.85 + GPU embedder + reranker at 1024 = 24.1 GB peak); the bench now records
+   `rerank_fallbacks` per level so this cannot hide again.
+
+6. **Quantization format, same model (9B):** decode at c1 scales with weight bytes exactly as predicted — BF16
+   16.8 GiB → 51 tok/s, W8A8 11.9 GiB → 71 tok/s, W4A16 9.5 GiB → 95 tok/s. At c32 the order holds (917 / 1,296 /
+   1,508 tok/s): on Ampere, int8 activations do not buy back what the extra weight bytes cost, so W4A16 wins on
+   both axes and W8A8's case rests on quality (pending the golden set).
+
 5. **Reliability under co-residency is a first-class result.** Every GPU OOM in these runs was the reranker's, and
    every one was recovered by the halve-and-retry path; the one failure that took vLLM down happened when vLLM itself
    had no headroom. The knob that matters is vLLM's utilization fraction *minus* the co-resident process's peak, and

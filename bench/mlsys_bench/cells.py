@@ -11,7 +11,9 @@ OUT = DOCS / "ablation-serving.md"
 
 
 def _row(r: dict) -> str:
-    return f"| {r['concurrency']} | {r['requests_per_s']} | {r['output_tokens_per_s']} | {r['ttft_ms']['p50']} | {r['ttft_ms']['p99']} | {r['total_ms']['p50']} | {r['total_ms']['p99']} | {r['errors']} |"
+    fb = r.get("rerank_fallbacks")
+    note = f" ({fb} rerank fallbacks)" if fb else ""
+    return f"| {r['concurrency']} | {r['requests_per_s']} | {r['output_tokens_per_s']} | {r['ttft_ms']['p50']} | {r['ttft_ms']['p99']} | {r['total_ms']['p50']} | {r['total_ms']['p99']} | {r['errors']}{note} |"
 
 
 def render(cells: list[dict]) -> str:

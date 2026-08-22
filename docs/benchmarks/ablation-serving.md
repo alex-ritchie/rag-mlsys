@@ -11,6 +11,7 @@ through embed → hybrid retrieval → rerank → generation with the cell's pla
 |---|---|---|---|---|---|---|---|---|---|---|
 | `qwen35-9b-bf16` | 16.8 GiB | 2.18 GiB (64,111 tokens) | 1.96x | cpu / gpu@1024 | 20159 / 21669 / 24083 MiB | 386.3 | 29.8 | 1015.4 | 11189.4 | 21 oom, 0 5xx |
 | `qwen35-9b-w4a16` | 9.47 GiB | 6.64 GiB (195,658 tokens) | 5.97x | gpu / gpu@1024 | 17709 / 20510 / 24074 MiB | 696.5 | 19.7 | 411.6 | 5448.3 | 13 oom, 0 5xx |
+| `qwen35-9b-w8a8` | 11.87 GiB | 5.92 GiB (174,287 tokens) | 5.32x | gpu / gpu@1024 | 18931 / 21732 / 24112 MiB | 533.4 | 21.8 | 363.2 | 4414.8 | 64 oom, 0 5xx |
 | `qwen38-27b-w4a16-16k-bounded` | 16.59 GiB | 1.74 GiB (21,845 tokens) | 1.33x | cpu / gpu@512 | ? / None / 23131 MiB | 352.3 | 37.5 | 2220.4 | 29330.2 | 0 oom, 0 5xx |
 | `qwen38-27b-w4a16-8k` | 16.59 GiB | 1.27 GiB (12,528 tokens) | 1.53x | cpu / gpu@512 | ? / 20469 / 23171 MiB | 274.8 | 37.5 | 2230.5 | 35993.8 | 0 oom, 0 5xx |
 | `qwen38-27b-w4a16` | 16.59 GiB | 3.81 GiB (47,938 tokens) | 2.93x | cpu / gpu@512 | 21773 / 23165 / 24095 MiB | 352.4 | 40.8 | 2315.8 | 0.0 | 2 oom, 0 5xx |
@@ -64,6 +65,31 @@ Per-stage p50 at c1: embed 69, retrieve 3, rerank 262, ttft 1015, generate 5228,
 | 16 | 1.04 | 219.5 | 4844.5 | 10855.3 | 13885.8 | 27342.7 | 0 |
 
 Per-stage p50 at c1: embed 9, retrieve 3, rerank 263, ttft 411, generate 2524, total 2788
+
+## `qwen35-9b-w8a8` — `config/serving/vllm-qwen35-9b-w8a8.yaml`
+
+- model `qwen35-9b-w8a8` · vLLM {'version': '0.27.1'} · load 90 s · vLLM alive after run: True
+
+### Engine-direct
+
+| conc | req/s | out tok/s | TTFT p50 | TTFT p99 | total p50 | total p99 | errors |
+|---|---|---|---|---|---|---|---|
+| 1 | 0.141 | 71.2 | 21.8 | 32.6 | 7191.8 | 7203.1 | 0 |
+| 4 | 0.528 | 265.4 | 51.5 | 58.7 | 7573.5 | 7577.8 | 0 |
+| 8 | 1.043 | 533.4 | 61.8 | 63.9 | 7672.0 | 7673.8 | 0 |
+| 16 | 1.886 | 965.8 | 91.5 | 118.0 | 8476.0 | 8502.3 | 0 |
+| 32 | 2.531 | 1296.0 | 98.3 | 170.5 | 10488.0 | 10506.5 | 0 |
+
+### Gateway end-to-end
+
+| conc | req/s | out tok/s | TTFT p50 | TTFT p99 | total p50 | total p99 | errors |
+|---|---|---|---|---|---|---|---|
+| 1 | 0.283 | 60.6 | 363.2 | 715.1 | 3569.8 | 5615.3 | 0 |
+| 4 | 0.79 | 175.1 | 600.1 | 1467.5 | 5010.9 | 7881.7 | 0 |
+| 8 | 1.382 | 309.0 | 451.0 | 3765.2 | 4414.8 | 11097.3 | 0 |
+| 16 | 2.919 | 610.7 | 328.5 | 746.7 | 4267.7 | 6694.9 | 0 |
+
+Per-stage p50 at c1: embed 9, retrieve 3, rerank 261, ttft 362, generate 3294, total 3568
 
 ## `qwen38-27b-w4a16-16k-bounded` — `config/serving/vllm-qwen38-27b-16k-bounded.yaml`
 
