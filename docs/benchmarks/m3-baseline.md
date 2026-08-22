@@ -57,6 +57,17 @@ cheapest first:
 
 | 10 | **8K, util 0.88, seqs 24, prefill 2048** + GPU reranker@512 (M8 variant D) | stable for users, **not adopted** | KV **3.35 GiB (33,731 tokens, 4.12× at 8K)** — twice variant B's pool; LLM-only identical (593 tok/s @c16). rag-e2e: 0 failed answers, 0 fallbacks, but the reranker hit OOM 30× at c8/c16 and recovered in-service (halved batches), and TTFT was no better than B (2.2 s @c1, 3.9 s @c4, 4.8 s @c8 vs B's 2.2 / 3.1 / 20 s). Peak 24.1 GB. Conclusion: beside a co-resident reranker the 27B is bounded by *slack*, not KV — more KV does not convert into lower rag-e2e latency until the reranker stops competing for the last gigabyte. |
 
+## Erratum (2026-08-22, reranker concurrency guard)
+
+Cells run between commits `b197c21` and `9216c4a` (27B variants B/C/D, the 9B 8K cells, the first MoE attempt)
+were *meant* to run with the reranker serialized behind a semaphore and an OOM-recovery path. The semaphore and the
+recovery function were present in the service but the `/rerank` handler still called the model directly — the
+call-site replacement in that commit silently failed to match. Consequences for the rows above: concurrent rerank
+calls still ran in parallel on the GPU; every "OOM recovered in-service" note was in fact a reranker **500** that the
+gateway caught by falling back to the fused order (the bench could not yet count those, so `fallbacks 0` next to a
+rerank stage of ~15–20 ms means "most requests were not reranked"). LLM-only rows are unaffected. The rag-e2e phases
+of the affected cells are being re-run with the guard actually in place (`9216c4a`); rows are replaced as they land.
+
 ## MoE cell bring-up (Qwen3.6-35B-A3B)
 
 | # | Build | Outcome | Measured |

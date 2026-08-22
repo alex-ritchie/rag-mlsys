@@ -65,6 +65,8 @@ verified golden set. "Own best" means each model runs at the configuration its V
    goes 263 ms @c1 → 782 ms @c8 → 1.4 s @c16 (queueing behind the serialized cross-encoder), and rerank OOM-recovery
    fired 13 times at that placement (0 failed requests). Cross-request batching and smaller reranker inputs are the
    next levers; the measurement that decides between them is the golden-set recall at `max_length` 512 vs 1024.
+**Erratum:** rag-e2e rows measured before commit `9216c4a` ran with an *unserialized* reranker (the concurrency guard was defined but not wired to the handler); wherever the rerank stage reads ~15–20 ms the gateway had fallen back to the fused order. Those rows are being re-measured; see the erratum in [m3-baseline.md](../benchmarks/m3-baseline.md).
+
 † At gateway c8/c16 the W8A8 cell's reranker OOMed (57 events, all caught) and most requests fell back to the fused
    order, so those TTFT/throughput figures are effectively *no-rerank* numbers; c1/c4 are genuine. The cell was
    over-subscribed (util 0.85 + GPU embedder + reranker at 1024 = 24.1 GB peak); the bench now records
