@@ -186,5 +186,7 @@ async def ask(deps: Deps, req: AskRequest) -> AsyncIterator[PipelineEvent]:
                 prompt_version=s.prompt_version,
                 abstained=abstained,
                 query_log_id=log_id,
+                finish_reason=finish_reason,
+                truncated=finish_reason == "length",
             ).model_dump(),
         )

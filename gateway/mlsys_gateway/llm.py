@@ -135,7 +135,10 @@ class AnthropicLLM:
                 total_tokens=u.input_tokens + u.output_tokens,
             ),
         )
-        yield StreamEvent("done")
+        stop = final.stop_reason or ""
+        yield StreamEvent(
+            "done", finish_reason={"end_turn": "stop", "max_tokens": "length"}.get(stop, stop)
+        )
 
 
 class FakeLLM:
@@ -172,7 +175,7 @@ class FakeLLM:
                 total_tokens=prompt_tokens + len(words),
             ),
         )
-        yield StreamEvent("done")
+        yield StreamEvent("done", finish_reason="length" if len(words) >= max_tokens else "stop")
 
 
 def now_ms() -> float:
