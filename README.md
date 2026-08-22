@@ -75,15 +75,18 @@ histogram and a per-query log row.
 | M10 hosted demo | 🔧 demo profile + cost controls tested; Supabase/Fly/Pages deploy pending credentials | `gateway/tests/test_api.py::test_demo_profile_rate_limit_and_budget` |
 | M11 writeups | 🔧 this README, LICENSING, runbook, scaling; benchmark report awaits numbers | `docs/` |
 
-## Quickstart (5 commands, no Docker needed)
+## Quickstart (no Docker needed)
 
 ```bash
 make setup && make setup-models             # uv workspace + frontend deps (+ torch cu128, models)
 make db-up && export DATABASE_URL='...'     # unprivileged Postgres+pgvector under data/pg
 make ingest && make index                   # fetch book @ pinned SHA → 2,815 chunks → bge-m3 HNSW
-EMBEDDER_MODE=gpu make embedder & RERANKER_MODE=gpu make reranker & make vllm &
-make gateway & (cd frontend && pnpm dev)    # http://localhost:5173
+make up                                     # embedder + reranker + gateway + frontend → opens http://localhost:5173
 ```
+
+`make up` defaults to `LLM_MODEL=fake` (real retrieval and citations, a stand-in generator). For real answers:
+`PROFILE=demo ANTHROPIC_API_KEY=... make up` (Claude Haiku) or start vLLM (`make vllm`) and run
+`LLM_BASE_URL=http://localhost:8003/v1 LLM_MODEL=qwen38-27b-w4a16 make up`. Ctrl-C stops everything.
 
 ```bash
 curl -N localhost:8000/api/ask -H 'content-type: application/json' \

@@ -72,6 +72,9 @@ reranker: ## Run the reranker service (RERANKER_MODE=cpu|gpu|onnx)
 gateway: ## Run the gateway (PROFILE=local|demo)
 	$(PY) uvicorn mlsys_gateway.app:app --host 0.0.0.0 --port 8000 --reload
 
+up: ## One command: DB + embedder + reranker + gateway + frontend, opens http://localhost:5173 (LLM_MODEL=fake default)
+	./scripts/up.sh
+
 dev: ## Gateway + frontend dev server (expects embedder/reranker/vLLM already up)
 	( $(PY) uvicorn mlsys_gateway.app:app --port 8000 & cd frontend && pnpm dev ); wait
 
@@ -132,4 +135,4 @@ demo-deploy: ## Deploy the demo backend (fly.io) + frontend (Cloudflare Pages)
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*## /\t/' | awk -F'\t' '{printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: setup setup-models lint fmt test test-integration guard ci db-up db-down db-migrate fetch ingest ingest-dry index retrieval-smoke embedder reranker gateway dev vllm golden-generate golden-verify eval eval-retrieval judge-validate bench bench-sweeps bench-report compose-up compose-down images k8s-apply k8s-delete hpa-demo demo-load-supabase demo-deploy help
+.PHONY: up setup setup-models lint fmt test test-integration guard ci db-up db-down db-migrate fetch ingest ingest-dry index retrieval-smoke embedder reranker gateway dev vllm golden-generate golden-verify eval eval-retrieval judge-validate bench bench-sweeps bench-report compose-up compose-down images k8s-apply k8s-delete hpa-demo demo-load-supabase demo-deploy help
