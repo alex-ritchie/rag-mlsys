@@ -23,8 +23,8 @@ spec:
             - --model=dbirks/Qwen3.8-27B-W4A16-AutoRound
             - --served-model-name=qwen38-27b-w4a16
             - --port=8003
-            - --max-model-len=32768
-            - --gpu-memory-utilization=0.95
+            - --max-model-len=16384            # M3 attempt 5: frees ~2.4 GB for the reranker
+            - --gpu-memory-utilization=0.90
             - --enable-prefix-caching
             - --reasoning-parser=qwen3
             - --language-model-only

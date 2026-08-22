@@ -1,0 +1,20 @@
+# Optional: let vLLM and the reranker share the single GPU in k3s by advertising it as 2 time-sliced devices.
+# Apply once after the device plugin: kubectl apply -f k8s/_nvidia-device-plugin-timeslicing.yaml, then restart the
+# plugin DaemonSet with `--config-file=/config/config.yaml` (see the NVIDIA device-plugin docs, "time-slicing").
+# Memory is NOT partitioned — the M3 measurements (vLLM util 0.90 @ 16K + reranker 512 = 23.66 GB peak) are what
+# make this safe. Excluded from `make k8s-apply` (leading underscore) because it changes cluster-wide plugin config.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nvidia-device-plugin-config
+  namespace: kube-system
+data:
+  config.yaml: |
+    version: v1
+    sharing:
+      timeSlicing:
+        renameByDefault: false
+        failRequestsGreaterThanOne: false
+        resources:
+          - name: nvidia.com/gpu
+            replicas: 2

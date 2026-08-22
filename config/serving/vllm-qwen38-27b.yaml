@@ -4,8 +4,8 @@ model: dbirks/Qwen3.8-27B-W4A16-AutoRound
 served_model_name: qwen38-27b-w4a16
 port: 8003
 args:
-  max-model-len: 32768
-  gpu-memory-utilization: 0.95        # 0.90 leaves only 1.52 GiB KV on 24 GB (engine refuses 32K); 0.95 -> 4.78 GiB (M3 measured)
+  max-model-len: 16384              # 32K leaves no VRAM for the GPU reranker; RAG prompts are ~3K tokens (M3 attempt 5)
+  gpu-memory-utilization: 0.90        # with 16K: KV 3.8 GiB (47,938 tokens); leaves ~2.4 GB for the reranker (M3 attempt 5)
   enable-prefix-caching: true
   reasoning-parser: qwen3
   language-model-only: true          # skip the vision tower (flag name per Qwen3.6 recipes; verify at M3)
@@ -19,6 +19,7 @@ env:
   VLLM_USE_V1: "1"
 notes: |
   Ampere (sm_86): no FP8/NVFP4 kernels. W4A16 compressed-tensors runs through Marlin.
-  M3 (2026-08-21, vLLM 0.27.1+cu129, torch 2.13.0+cu129, transformers 5.15.1): weights 16.84 GiB,
-  KV 4.78 GiB (67,584 tokens) at util 0.95, VRAM 22.9 GB steady under the c8 soak, CUDA graphs on.
-  Consequence: embedder and reranker run on CPU (nothing else fits) — docs/benchmarks/m3-baseline.md.
+  M3 (2026-08-22, vLLM 0.27.1+cu129, torch 2.13.0+cu129, transformers 5.15.1): weights 16.84 GiB.
+  Final placement (attempt 5): util 0.90 + 16K context + bge-reranker-v2-m3 fp16 on the same GPU at
+  max_length 512 -> 23.66 GB peak under an 8-way burst, no OOM; rerank 170-470 ms vs 22 s on CPU.
+  Embedder stays on CPU (71 ms). Full attempt log: docs/benchmarks/m3-baseline.md.

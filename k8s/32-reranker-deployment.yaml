@@ -1,6 +1,8 @@
-# Placement (GPU vs CPU) is the M3 decision (spec §5.4). Default below: CPU. To move it to the GPU,
-# switch the image tag to the -gpu build, set RERANKER_MODE=gpu, and add nvidia.com/gpu to limits
-# — only if the measured VRAM budget allows it alongside vLLM.
+# Placement decision (M3 attempt 5, docs/benchmarks/m3-baseline.md): the reranker belongs on the GPU next to
+# vLLM (261 ms vs 22 s on CPU). The NVIDIA device plugin hands a whole GPU to one pod, so co-residency in k8s
+# needs time-slicing (k8s/_nvidia-device-plugin-timeslicing.yaml: the single GPU is advertised as 2 slices);
+# then set RERANKER_MODE=gpu, use the -gpu image, and request nvidia.com/gpu: 1 here. Until that is applied,
+# this manifest runs the reranker on CPU so the stack still comes up — with the measured latency penalty.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,6 +23,7 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - {name: RERANKER_MODE, value: cpu}
+            - {name: RERANKER_MAX_LENGTH, value: "512"}
             - {name: HF_HOME, value: /data/hf-cache}
           ports: [{containerPort: 8002}]
           resources:

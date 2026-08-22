@@ -13,6 +13,8 @@
 | 3 | CUDA graphs, **`--max-model-len 16384`, util 0.88** (free VRAM for a GPU reranker) | refused: needs 1.29 GiB KV, had **1.05 GiB** | overhead is not linear in utilization: 0.88 → 1.05 GiB KV, 0.90 → 1.52, 0.92 → 4.07, 0.95 → 4.78. |
 | 4 | CUDA graphs, 16384, **util 0.92 + bge-reranker-v2-m3 on the same GPU** | **works alone, fails under load**: KV 4.07 GiB (51,579 tokens, 3.15× at 16K); vLLM 22.26 GB, +reranker 23.62 GB; GPU rerank **261 ms** (30 cands) / 182 ms (20); an 8-way generation burst pushed VRAM to 24,087 of 24,564 MiB and the reranker then OOMed (`Tried to allocate 26 MiB … 22 MiB free`); with the reranker at `max_length` 512 one RAG query reranked in 465 ms, then **vLLM itself died** under a 6-way burst. | Co-residency at 0.92 leaves ~0.5 GB headroom — not enough for both processes' transient activations. Next: util 0.90 + 16K (KV 1.52 GiB ≈ 19K tokens ≈ 4 concurrent RAG requests) + reranker 512, and measure the concurrency ceiling honestly instead of the context ceiling. |
 
+| 5 | CUDA graphs, 16384, **util 0.90 + GPU reranker at `max_length` 512**, `PYTORCH_CUDA_ALLOC_CONF=expandable_segments` | **PASS — adopted** | Available KV cache memory: 3.8 GiB (GPU KV cache size: 47,938 tokens, 2.93× at 16K); vLLM 21.77 GB, +reranker 23.14 GB, **peak 23.66 GB** during an 8-way 400-token generation burst running concurrently with three RAG queries; 0 OOM, 0 gateway errors, vLLM alive afterwards. End to end: rerank **169–471 ms**, TTFT 2.2–2.6 s (≈2.9K-token prompt prefill while the burst occupied the batch), totals 3.6–11.5 s; the unanswerable question abstained correctly. |
+
 Environment: vLLM 0.27.1 (+cu129 wheel), torch 2.13.0+cu129, transformers 5.15.1, driver 575.57 (CUDA 12.9),
 model `dbirks/Qwen3.8-27B-W4A16-AutoRound` (compressed-tensors pack-quantized, group 128, symmetric int4),
 architecture `Qwen3_5ForConditionalGeneration` (64 layers: full + linear attention), attention block size auto-set to
@@ -45,12 +47,12 @@ architecture `Qwen3_5ForConditionalGeneration` (64 layers: full + linear attenti
 the profiling run's activations. Raising utilization to 0.95 recovered 3.3 GiB of KV, not 1.2 — vLLM's profiling
 reserve is not linear in the utilization fraction.
 
-## Placement decision (contingency ladder, spec §5.4) — **in progress**
+## Placement decision (contingency ladder, spec §5.4) — **settled, attempt 5**
 
 | Component | Placement | Status |
 |---|---|---|
 | bge-m3 (query-time) | **CPU** — settled | query-embed p50 71–115 ms, within the ≤100 ms target; not worth VRAM |
-| bge-reranker-v2-m3 | **GPU, with vLLM's KV budget reduced** — being finalised | rung 1 (reranker on CPU) was measured and rejected: 22.6 s per query end to end (`m2-retrieval.md`); the GPU reranker costs 261 ms. Attempt 4 shows util 0.92 is too tight; attempt 5 (util 0.90 / 16K) is next. |
+| bge-reranker-v2-m3 | **GPU, co-resident with vLLM** (vLLM util 0.90, 16K context; reranker `max_length` 512) | rung 1 (CPU) measured and rejected: 22.6 s/query (`m2-retrieval.md`); GPU costs 170–470 ms. Util 0.92 left too little headroom (attempt 4); 0.90 survives bursts with ~0.9 GB spare (attempt 5). Cost: context 32K → 16K, which RAG never needs, and ~2.9× instead of ~2× concurrency at the full context. |
 
 Bulk indexing borrows the GPU as a batch job while vLLM is down (28 s for the whole corpus). The ladder's ordering
 assumed a CPU reranker is acceptable; measurement says it is 20–80× over budget, so the VRAM for the reranker comes

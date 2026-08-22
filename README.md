@@ -8,12 +8,12 @@
 > shim, and the React frontend — `make up` brings all of it up in one command. Real questions return correct,
 > fully-cited answers ([example](docs/benchmarks/m3-baseline.md)).
 >
-> **Open experiment: where the reranker lives.** The spec's VRAM plan assumed ~1.5 GB of vLLM overhead; measured
-> overhead is ~3.7 GB, so the 27B leaves no room for the cross-encoder reranker on the GPU at a 32K context. The
-> spec's fallback (reranker on CPU) was measured and rejected — **22.6 s per query** (fp32) and still 2.7–11 s as
-> int8 ONNX. Trading context length for VRAM (16K, utilization 0.92) fits the GPU reranker at **261 ms** but leaves
-> ~0.5 GB of headroom and both processes OOM under a generation burst. Next trial: utilization 0.90 at 16K
-> (~19K KV tokens ≈ 4 concurrent RAG requests). Full attempt log with numbers:
+> **Settled by experiment: where the reranker lives.** The spec's VRAM plan assumed ~1.5 GB of vLLM overhead;
+> measured overhead is ~3.7 GB, so the 27B leaves no room for the cross-encoder reranker on the GPU at a 32K context.
+> The spec's fallback (reranker on CPU) was measured and rejected — **22.6 s per query** (fp32) and still 2.7–11 s
+> as int8 ONNX. Trading context length for VRAM (16K) at utilization 0.92 fit the reranker at **261 ms** but OOMed
+> under a generation burst; **utilization 0.90 at 16K with the reranker at `max_length` 512 survives an 8-way burst
+> at 23.66 GB peak** and is now the default (`make up`, compose, serving config). Full attempt log with numbers:
 > [docs/benchmarks/m3-baseline.md](docs/benchmarks/m3-baseline.md); CPU-reranker sweep:
 > [docs/benchmarks/m2-retrieval.md](docs/benchmarks/m2-retrieval.md).
 >
@@ -22,12 +22,12 @@
 > non-GPU bottleneck (~3.9 req/s ceiling with a zero-cost LLM). All deviations from the design doc are logged in
 > [docs/DEVIATIONS.md](docs/DEVIATIONS.md).
 >
-> **Next steps, in order.** (1) Settle reranker placement and make it the `make up` default. (2) Golden set:
+> **Next steps, in order.** (1) Golden set:
 > candidates are being generated with Claude Opus 5; the owner's verification pass (`make golden-verify`) unlocks
-> `make eval` and every quality comparison after it. (3) Validate the Haiku judge against 30 hand labels. (4) M8:
+> `make eval` and every quality comparison after it. (2) Validate the Haiku judge against 30 hand labels. (3) M8:
 > the four-model ablation (9B, 35B-A3B MoE, llama.cpp+MTP) each at its *own* best VRAM configuration, plus the
 > serving and chunking sweeps (prefix caching, CUDA graphs vs eager, MTP, reasoning on/off, chunk size
-> 400/600/800, small-to-big). (5) k3s + dashboards + the HPA demo (needs `docker` group membership on the
+> 400/600/800, small-to-big). (4) k3s + dashboards + the HPA demo (needs `docker` group membership on the
 > workstation), then the hosted demo and the benchmark report.
 
 A RAG learning companion for the two-volume textbook **[*Machine Learning Systems*](https://mlsysbook.ai/) by Vijay Janapa Reddi** (Harvard; [source](https://github.com/harvard-edge/cs249r_book), CC BY-NC-SA 4.0). Ask a question, get a grounded answer with inline citations, see everything from retrieval scores to latency breakdowns.
@@ -153,7 +153,7 @@ generation) is an accessibility layer so you can try the retrieval and citation 
 - Chunking: 2,815 chunks, p50 680 tokens in the bge-m3 tokenizer; re-ingest is a content-hash no-op.
 - Retrieval: embed 9 ms (GPU) / 71 ms p50 (CPU), hybrid SQL 3–14 ms, rerank 260 ms (GPU, 30 docs).
 - Gateway: p50 overhead ≈ 5 ms excluding model + service time; the `openai` client works unmodified against the shim.
-- Serving (M3): Qwen3.8-27B W4A16 on the 3090 Ti — weights 16.84 GiB, KV 4.78 GiB at util 0.95, 351 tok/s aggregate at concurrency 8 with TTFT p50 172 ms, zero errors over 10 minutes; embedder/reranker moved to CPU because 22.9 of 24 GB is spoken for.
+- Serving (M3): Qwen3.8-27B W4A16 on the 3090 Ti — weights 16.84 GiB, KV 4.78 GiB at util 0.95, 351 tok/s aggregate at concurrency 8 with TTFT p50 172 ms, zero errors over 10 minutes; final placement: util 0.90 @ 16K with the reranker on the same GPU (170–470 ms), embedder on CPU.
 - Frontend: Lighthouse performance 100, 61 KB gzipped.
 - Everything else — TTFT/tok-per-second vs concurrency, the ablation matrix, lever sweeps, HPA 1→4→1, dashboards —
   lands in `docs/benchmarks/` as the GPU milestones run. Placeholders are labelled *pending*; no number is typed by hand.

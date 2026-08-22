@@ -42,6 +42,7 @@ GEN_SINGLE = """You write exam-style questions for a textbook chapter. Below is 
 </passage>
 
 Write ONE question a student could answer from this passage alone, plus 2-4 short key points a correct answer must contain, paraphrased in your own words (do not copy sentences from the passage).
+The question must be self-contained, phrased the way a student would ask a study assistant about the textbook — never refer to "the passage", "the text", or "the author".
 Respond with JSON only: {{"question": "...", "key_points": ["...", "..."]}}"""
 
 GEN_MULTI = """You write exam-style synthesis questions for a textbook. Below are two passages from the same chapter.
@@ -54,6 +55,7 @@ GEN_MULTI = """You write exam-style synthesis questions for a textbook. Below ar
 </passage_2>
 
 Write ONE question whose answer REQUIRES combining both passages, plus 2-4 short key points a correct answer must contain, paraphrased (no copied sentences).
+The question must be self-contained, phrased the way a student would ask a study assistant about the textbook — never refer to "the passage(s)", "the text", or "the author".
 Respond with JSON only: {{"question": "...", "key_points": ["...", "..."]}}"""
 
 GEN_UNANSWERABLE = """You write trap questions for a retrieval system over a textbook about machine learning systems. Below is a passage showing the textbook's style and scope.
@@ -62,7 +64,7 @@ GEN_UNANSWERABLE = """You write trap questions for a retrieval system over a tex
 {text}
 </passage>
 
-Write ONE plausible-sounding question on a closely related topic that this passage (and a textbook like it) would NOT answer — e.g. a specific vendor pricing detail, a named product's internal implementation, a very recent event, or a numeric fact the passage does not state. It must sound like a reasonable student question.
+Write ONE plausible-sounding question on a closely related topic that this passage (and a textbook like it) would NOT answer — e.g. a specific vendor pricing detail, a named product's internal implementation, a very recent event, or a numeric fact the passage does not state. It must sound like a reasonable, self-contained student question (no reference to "the passage").
 Respond with JSON only: {{"question": "...", "why_unanswerable": "..."}}"""
 
 
@@ -133,10 +135,15 @@ def generate(
     async def ask_model(prompt: str) -> dict:
         msg = await client.messages.create(
             model=model,
-            max_tokens=400,
+            max_tokens=4000,
             messages=[{"role": "user", "content": prompt}],
         )
-        return _parse_json("".join(getattr(b, "text", "") for b in msg.content))
+        obj = _parse_json("".join(getattr(b, "text", "") for b in msg.content))
+        if "question" not in obj:
+            raise ValueError(
+                f"no JSON question in response (stop_reason={msg.stop_reason}, output_tokens={msg.usage.output_tokens})"
+            )
+        return obj
 
     async def go() -> list[Candidate]:
         engine = make_engine()
