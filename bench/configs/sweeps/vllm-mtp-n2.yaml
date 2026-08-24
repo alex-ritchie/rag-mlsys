@@ -4,7 +4,7 @@ target: llm-only
 base_url: http://localhost:8003/v1
 model: qwen38-27b-w4a16
 serving_config: config/serving/vllm-qwen38-27b.yaml
-lever: "speculative-config={"method":"mtp","num_speculative_tokens":2}"
+lever: 'speculative-config={"method":"mtp","num_speculative_tokens":2}'
 max_tokens: 512
 extra_body:
   chat_template_kwargs: {enable_thinking: false}

@@ -16,6 +16,7 @@ args:
   # quantization is auto-detected from config.json (compressed-tensors pack-quantized -> Marlin int4 on sm_86)
   # enforce-eager: true              # escape hatch if CUDA-graph capture OOMs; record which mode ran
   # speculative-config: '{"method":"mtp","num_speculative_tokens":2}'   # M8 lever
+  #   -> does not fit at util 0.90/16K: the MTP drafter leaves 0.52 GiB KV (< 1.71 GiB for one 16K seq). Needs util 0.95 + max-model-len 8192 (M8 sweep).
 env:
   VLLM_USE_V1: "1"
 notes: |

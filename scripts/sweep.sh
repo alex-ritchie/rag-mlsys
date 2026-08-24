@@ -11,6 +11,7 @@ killtree() { local pid=$1 c; for c in $(pgrep -P "$pid" 2>/dev/null); do killtre
 row() { # name bench serving [overrides...]
   local name=$1 bench=$2 serving=$3; shift 3
   ss -ltn | grep -qE ":8003 " && { echo "!! :8003 busy, skipping $name"; return; }
+  ls bench/results/*-sweep-*-"$name".json >/dev/null 2>&1 && { echo "-- $name already has a result, skipping (delete it to re-run)"; return; }
   echo "== $name  ($serving $*)  $(date -u +%T)"
   uv run python scripts/serve_vllm.py "$serving" "$@" >"$LOGS/$name.server.log" 2>&1 & local pid=$!
   local t0=$(date +%s)
@@ -27,7 +28,8 @@ if [[ "${1:-all}" != "llamacpp" ]]; then
   row vllm-eager         bench/configs/sweeps/vllm-eager.yaml              "$B" --set enforce-eager=true
   row vllm-seqs-8        bench/configs/sweeps/vllm-max-num-seqs-8.yaml     "$B" --set max-num-seqs=8
   row vllm-seqs-64       bench/configs/sweeps/vllm-max-num-seqs-64.yaml    "$B" --set max-num-seqs=24   # 24 is the Mamba-block ceiling at this budget; 64 cannot start
-  row vllm-mtp-n2        bench/configs/sweeps/vllm-mtp-n2.yaml             "$B" --set 'speculative-config={"method":"mtp","num_speculative_tokens":2}'
+  # MTP drafter costs ~3.3 GiB: at util 0.90/16K only 0.52 GiB KV is left (< 1.71 needed). llm-only row => no reranker co-resident, so util 0.95 + 8K.
+  row vllm-mtp-n2        bench/configs/sweeps/vllm-mtp-n2.yaml             "$B" --set 'speculative-config={"method":"mtp","num_speculative_tokens":2}' --set gpu-memory-utilization=0.95 --set max-model-len=8192
   row vllm-reasoning-on  bench/configs/sweeps/vllm-reasoning-on.yaml       "$B"
 fi
 if [[ "${1:-all}" != "vllm" ]]; then

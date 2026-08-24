@@ -1,0 +1,139 @@
+{
+  "name": "sweep-llamacpp-kv-q4_0-llamacpp-kv-q4_0",
+  "created_at": "2026-08-23T03:08:41.309477+00:00",
+  "git_sha": "52433eade9a40927a9a8e8a4867eb55dc6d16c0c",
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 3090 Ti",
+    "driver": "575.57.08",
+    "memory": "24564 MiB"
+  },
+  "server": {
+    "models": {
+      "models": [
+        {
+          "name": "qwen38-27b-gguf-ud-q4km",
+          "model": "qwen38-27b-gguf-ud-q4km",
+          "modified_at": "",
+          "size": "",
+          "digest": "",
+          "type": "model",
+          "description": "",
+          "tags": [
+            ""
+          ],
+          "capabilities": [
+            "completion"
+          ],
+          "parameters": "",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "",
+            "families": [
+              ""
+            ],
+            "parameter_size": "",
+            "quantization_level": ""
+          }
+        }
+      ],
+      "object": "list",
+      "data": [
+        {
+          "id": "qwen38-27b-gguf-ud-q4km",
+          "aliases": [
+            "qwen38-27b-gguf-ud-q4km"
+          ],
+          "tags": [],
+          "object": "model",
+          "created": 1787454078,
+          "owned_by": "llamacpp",
+          "meta": {
+            "vocab_type": true,
+            "n_vocab": 248320,
+            "n_ctx": 32768,
+            "n_ctx_train": 262144,
+            "n_embd": 5120,
+            "n_params": 27320697856,
+            "size": 16453443584,
+            "ftype": "Q4_K - Medium"
+          }
+        }
+      ]
+    }
+  },
+  "config": {
+    "name": "sweep-llamacpp-kv-q4_0",
+    "target": "llm-only",
+    "base_url": "http://localhost:8003/v1",
+    "model": "qwen38-27b-gguf-ud-q4km",
+    "serving_config": "config/serving/llamacpp-qwen38-27b.yaml",
+    "lever": "cache-type-k=q4_0,cache-type-v=q4_0",
+    "max_tokens": 512,
+    "concurrency": [
+      1,
+      4
+    ],
+    "requests_per_level": 24
+  },
+  "config_file": "bench/configs/sweeps/llamacpp-kv-q4_0.yaml",
+  "serving_config": {
+    "engine": "llamacpp",
+    "model_file": "data/models/Qwen3.8-27B-UD-Q4_K_M.gguf",
+    "served_model_name": "qwen38-27b-gguf-ud-q4km",
+    "port": 8003,
+    "args": {
+      "jinja": true,
+      "spec-type": "draft-mtp",
+      "spec-draft-n-max": 3,
+      "c": 32768,
+      "n-gpu-layers": 99,
+      "parallel": 1
+    }
+  },
+  "reproduce": "python -m mlsys_bench.run bench/configs/sweeps/llamacpp-kv-q4_0.yaml",
+  "runs": [
+    {
+      "concurrency": 1,
+      "requests": 24,
+      "errors": 0,
+      "wall_s": 205.09,
+      "requests_per_s": 0.117,
+      "output_tokens_per_s": 59.1,
+      "ttft_ms": {
+        "p50": 1835.3,
+        "p90": 7906.1,
+        "p99": 9574.5
+      },
+      "total_ms": {
+        "p50": 8416.1,
+        "p90": 10013.1,
+        "p99": 10439.2
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    },
+    {
+      "concurrency": 4,
+      "requests": 24,
+      "errors": 0,
+      "wall_s": 203.83,
+      "requests_per_s": 0.118,
+      "output_tokens_per_s": 59.4,
+      "ttft_ms": {
+        "p50": 18681.6,
+        "p90": 30778.8,
+        "p99": 34260.4
+      },
+      "total_ms": {
+        "p50": 33868.3,
+        "p90": 36817.9,
+        "p99": 37468.5
+      },
+      "stage_ms_p50": {},
+      "rerank_fallbacks": 0,
+      "error_samples": []
+    }
+  ]
+}
